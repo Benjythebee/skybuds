@@ -1,0 +1,80 @@
+{
+  "jp": [
+    {
+      "title": "great_day",
+      "voice": "onyx",
+      "text": "今日は素晴らしい日ですね！",
+      "path": "/audio/jp-great_day.mp3"
+    },
+    {
+      "title": "how_are_you",
+      "voice": "onyx",
+      "text": "お元気ですか？",
+      "path": "/audio/jp-how_are_you.mp3"
+    },
+    {
+      "title": "hello_0",
+      "voice": "coral",
+      "text": "こんにちは！",
+      "path": "/audio/jp-hello_0.mp3"
+    },
+    {
+      "title": "morning_0",
+      "voice": "ash",
+      "text": "おはよう",
+      "path": "/audio/jp-morning_0.mp3"
+    },
+    {
+      "title": "evening_1",
+      "voice": "ash",
+      "text": "こんばんは",
+      "path": "/audio/jp-evening_1.mp3"
+    }
+  ],
+  "en": [
+    {
+      "title": "hello_0",
+      "voice": "coral",
+      "text": "Good day sir",
+      "path": "/audio/en-hello_0.mp3"
+    },
+    {
+      "title": "hello_1",
+      "voice": "ash",
+      "text": "Hello, how are you?",
+      "path": "/audio/en-hello_1.mp3"
+    },
+    {
+      "title": "Morning_0",
+      "voice": "ash",
+      "text": "G'day mate",
+      "path": "/audio/en-Morning_0.mp3"
+    },
+    {
+      "title": "Morning_1",
+      "voice": "ash",
+      "text": "Kia ora! good day ain't it?",
+      "path": "/audio/en-Morning_1.mp3"
+    }
+  ],
+  "fr": [
+    {
+      "title": "bonjour_0",
+      "voice": "ash",
+      "text": "Bonjour, comment ça va?",
+      "path": "/audio/fr-bonjour_0.mp3"
+    },
+    {
+      "title": "bonjour_1",
+      "voice": "ash",
+      "text": "Coucou!",
+      "path": "/audio/fr-bonjour_1.mp3"
+    },
+    {
+      "title": "random_0",
+      "voice": "onyx",
+      "text": "hmmm, ce pain au chocolat est délicieux",
+      "path": "/audio/fr-random_0.mp3"
+    }
+  ]
+}

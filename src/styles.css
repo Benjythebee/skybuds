@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+body{
+    /* @apply bg-blue-200/80 h-full w-full; */
+    @apply bg-gray-800 h-full w-full;
+}
+.root{
+    @apply h-full w-full;
+}

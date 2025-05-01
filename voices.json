@@ -1,0 +1,67 @@
+{
+    "jp": [
+        {
+            "title": "great_day",
+            "voice": "onyx",
+            "text": "今日は素晴らしい日ですね！"
+        },
+        {
+            "title": "how_are_you",
+            "voice": "onyx",
+            "text": "お元気ですか？"
+        },
+        {
+            "title": "hello_0",
+            "voice": "coral",
+            "text": "こんにちは！"
+        },
+        {
+            "title": "morning_0",
+            "voice": "ash",
+            "text": "おはよう"
+        },
+        {
+            "title": "evening_1",
+            "voice": "ash",
+            "text": "こんばんは"
+        }
+    ],
+    "en": [
+        {
+            "title": "hello_0",
+            "voice": "coral",
+            "text": "Good day sir"
+        },
+        {
+            "title": "hello_1",
+            "voice": "ash",
+            "text": "Hello, how are you?"
+        },
+        {
+            "title": "Morning_0",
+            "voice": "ash",
+            "text": "G'day mate"
+        }, {
+            "title": "Morning_1",
+            "voice": "ash",
+            "text": "Kia ora! good day ain't it?"
+        }
+    ],
+    "fr": [
+        {
+            "title": "bonjour_0",
+            "voice": "ash",
+            "text": "Bonjour, comment ça va?"
+        },
+        {
+            "title": "bonjour_1",
+            "voice": "ash",
+            "text": "Coucou!"
+        },
+        {
+            "title": "random_0",
+            "voice": "onyx",
+            "text": "hmmm, ce pain au chocolat est délicieux"
+        }
+    ]
+}
