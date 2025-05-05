@@ -44,21 +44,32 @@ export class LightObject {
 
     baseLightIntensity = 0.9
     baseEmissiveIntensity = 0.9
-    bonusFlicker = new MeanRevertingValue(0.3)
+    bonusFlicker = new MeanRevertingValue(0.5)
+
+    /**
+     * Compute the light intensity based on the world time
+     * Light needs to be 1 at night and 0.1 at day
+     * @param worldTime 
+    * @returns The light intensity
+     */
+    computeLightIntensity(worldTime:number){
+        // Compute the light intensity based on the world time
+        // Light needs to be 1 at night and 0.1 at day
+        let lightIntensity = 0.1 + (0.9 * Math.abs(Math.cos(worldTime * Math.PI)));
+        return lightIntensity
+        
+    }
+
     update= ()=>{
 
         if(!this.isConstant){
         
             // If day time is greater than 0.2, slowly turn off the light
             if(this.worldTime > 0.2 && this.worldTime < 0.8 && this.active) {
-                if(this.baseLightIntensity > 0.1) {
-                    this.baseLightIntensity -= 0.001
-                }
+                this.baseLightIntensity = this.computeLightIntensity(this.worldTime)
 
             } else if(this.worldTime < 0.2 && this.worldTime > 0.8 && !this.active) {
-                if(this.baseLightIntensity < 0.98) {
-                    this.baseLightIntensity += 0.001
-                }
+                this.baseLightIntensity = this.computeLightIntensity(this.worldTime)
             }
         }
 
@@ -74,7 +85,7 @@ export class LightObject {
 
         this.light.intensity = this.baseLightIntensity +flicker
         this.mesh.material.emissiveIntensity = this.baseLightIntensity + flicker
-        if(Math.random() < 0.01) {
+        if(Math.random() < 0.005) {
             this.bonusFlicker.randomize()
         }
 

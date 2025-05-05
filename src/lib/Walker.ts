@@ -1,10 +1,14 @@
-import { ArrowHelper, Box3, BoxGeometry, Group, LoadingManager, Mesh, MeshStandardMaterial, SkinnedMesh, Raycaster, Scene, Object3D, Vector3, Box3Helper } from "three";
+import { ArrowHelper, Box3, BoxGeometry, Group, LoadingManager, Mesh, MeshStandardMaterial, SkinnedMesh, Raycaster, Scene, Object3D, Vector3, Box3Helper, PerspectiveCamera, Frustum, Bone } from "three";
 import { World, worldParameters} from "./World";
 import { FontLoader, GLTFLoader, SkeletonUtils } from "three/examples/jsm/Addons.js";
 import { useAudioContext } from "store/AudioContext";
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { gui } from "./config";
+import { AnimationManager } from "./animationManager";
+import { remove } from "three/examples/jsm/libs/tween.module.js";
 
+
+////// HEEEEEEEERRRRREEEEEEEEEEE https://stackblitz.com/edit/three-ezinstancedmesh2-skinning?file=src%2Fmain.ts
 
 /***
  * =============================
@@ -14,6 +18,12 @@ import { gui } from "./config";
 const folder1 = gui.addFolder( 'Walkers' );
 export const walkerConfigurations = {
     debug:false,
+    addWalker: () => {
+        Walker.create(World.instance)
+    },
+    removeWalker: () => {
+        Walker.removeWalker(Walker.walkers.length-1)
+    }
 }
 
 const onToggleDebug = (value:boolean)=>{
@@ -21,8 +31,41 @@ const onToggleDebug = (value:boolean)=>{
 }
 
 folder1.add(walkerConfigurations, 'debug').name('Debug').onChange(onToggleDebug)
+folder1.add(walkerConfigurations, 'addWalker').name('Add Walker')
+folder1.add(walkerConfigurations, 'removeWalker').name('Remove Walker')
 folder1.open()
 
+/**
+ * Available animation states for characters
+ */
+export enum CharacterState {
+  IDLE = 'Idle',
+  WAVING = 'Waving',
+  WALKING = 'Walking',
+  SITTING = 'Sitting',
+  TALKING = 'Talking'
+}
+
+const states:Record<CharacterState,{duration?:number,loop:boolean}> = {
+  [CharacterState.IDLE]: {
+    duration: 1.5,
+    loop: true,
+  },
+  [CharacterState.WAVING]: {
+    loop: false,
+  },
+  [CharacterState.WALKING]: {
+    loop: true,
+  },
+  [CharacterState.SITTING]: {
+    duration: 5,
+    loop: true,
+  },
+  [CharacterState.TALKING]: {
+    duration: 1.5,
+    loop: true,
+  }
+}
 
 type walker = {
     cube: Object3D;
@@ -32,39 +75,44 @@ type walker = {
     boundingBox: Box3 | null;
   };
 
-// const loader = new FontLoader();
-// let font = null!
-// loader.load( 'fonts/helvetiker_regular.typeface.json',(font)=>{
-//     font = font
-//     console.log('font',font)
-// })
-
+function gaussianRandom(mean=0, stdev=1, max:number=1, min:number = 0): number {
+  const u = 1 - Math.random(); // Converting [0,1) to (0,1]
+  const v = Math.random();
+  const z = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+  // Transform to the desired mean and standard deviation:
+  return Math.max(0,Math.min(1,z * stdev + mean));
+}
 export class Walker {
     static size = 0.5; //overwritten
     static rootBoundingBox = new Box3()
     static scale = 0.3
-
+    static walkers: Walker[] = [];
+    static rootCharacter: Object3D = null!
+    static loaderManager: LoadingManager = new LoadingManager()
+    static gltfLoader: GLTFLoader = new GLTFLoader(this.loaderManager)
+    
+    id: number
     object: Object3D;
     mesh: SkinnedMesh;
     direction: Vector3;
     speed: number;
     boundingBox: Box3 | null;
-    static walkers: Walker[] = [];
     raycaster: Raycaster = new Raycaster()
-    static rootCharacter: Object3D = null!
-    static loaderManager: LoadingManager = new LoadingManager()
-    static gltfLoader: GLTFLoader = new GLTFLoader(this.loaderManager)
+    currentState: CharacterState = CharacterState.WALKING
+    lastConversationTime = Date.now()    
 
+    
     collisionRayCasters = [new Raycaster(),new Raycaster()]
     collisionMesh: Mesh 
-
-    state: 'idle' | 'walking' = 'idle'
 
     static collisionMaterial = new MeshStandardMaterial({ color: 0xff0000,visible:false, transparent: true, opacity: 0.5 });
 
     debugRayCaster:Raycaster = new Raycaster()
 
+    static animationManager:AnimationManager = new AnimationManager()
+
     constructor(public world:World,props:walker){
+        this.id = Walker.walkers.length
         this.object = props.cube
         this.mesh = props.mesh
         this.direction = props.direction
@@ -96,11 +144,14 @@ export class Walker {
 
         this.collisionMesh.position.set(0,1,0)
 
+        ;(this.collisionMesh as any).walker = this
+
         // this.collisionMesh.rotation.copy(this.mesh.rotation)
         this.object.add(this.collisionMesh)
         this.collisionMesh.updateMatrixWorld(true)
         this.collisionMesh.updateMatrix()
 
+        Walker.animationManager.addCharacter(this, this.currentState,{speed:this.speed})
     }
 
     static isDebug = false
@@ -133,6 +184,9 @@ export class Walker {
             }
         })
 
+        // Store animations
+        this.animationManager.setGLTFAnimations(assets)
+
 
         const skinnedMesh = newObjects.getObjectByName('character') as Object3D
         if (skinnedMesh) {
@@ -151,18 +205,24 @@ export class Walker {
         
     }
 
-    static updateWalkers(deltaTime: number): void {
+    static updateWalkers(deltaTime: number,frustrum:Frustum): void {
         if (Walker.walkers.length === 0) return;
         if(worldParameters.paused) return
         // Update each walker
         this.walkers.forEach(walker => {
+            if(!walker.isInFrustum(frustrum)) return
             walker.update(deltaTime);
         });
+        Walker.animationManager.characterDataMap.forEach((characterData, walker) => {
+          if(!walker.isInFrustum(frustrum)) return
+          characterData.mixer.update(deltaTime);
+        })
+
       }
 
-    static setWalkerState(index:number,state:'idle'|'walking'){
+    static setWalkerState(index:number,state:CharacterState){
         if(this.walkers[index]){
-            this.walkers[index].state = state
+            this.walkers[index].currentState = state
         }
     }
 
@@ -170,13 +230,19 @@ export class Walker {
         return Walker.walkers.map(walker => walker).filter(walker => walker !== this)
     }
 
-    speechBubbleMesh:Mesh|null = null
-    speechBubble = ()=>{
-
-
+    getBone(boneName:string):Bone|undefined{
+        const bone = this.mesh.skeleton.getBoneByName(boneName)
+        return bone
     }
 
     update(deltaTime: number) {
+
+        if(this.currentState == CharacterState.TALKING || this.currentState == CharacterState.SITTING){
+          this.updateState()
+          return
+        }
+
+        
         // Calculate new position based on direction and speed
         const newPosition = this.object.position.clone().add(
             this.direction.clone().multiplyScalar(this.speed * deltaTime)
@@ -210,7 +276,7 @@ export class Walker {
 
 
             const collisions =[]
-            const collisionWithOtherWalker=[]
+            const collisionWithOtherWalker:Object3D[]=[]
             const otherWalkers = this.otherWalkers.map(walker => walker.collisionMesh)
             this.collisionRayCasters.forEach((raycaster, index) => {
               raycaster.far = 0.25
@@ -242,14 +308,38 @@ export class Walker {
 
               const collisionWithOtherWalkers = raycaster.intersectObjects(otherWalkers)
               if(collisionWithOtherWalkers.length > 0) {
-                collisionWithOtherWalker.push(collisionWithOtherWalkers[0])
+                collisionWithOtherWalker.push(collisionWithOtherWalkers[0].object)
               }
 
             })
 
             if(collisionWithOtherWalker.length>0 ){
               if(Math.random() < 0.1){
-                useAudioContext.getState().playRandomConversation()
+
+                let otherWalker:Walker = (collisionWithOtherWalker[0] as any).walker
+
+                if(otherWalker.currentState == CharacterState.SITTING){
+                  // ignore if sitting
+                  return
+                }
+
+                // For 5 seconds, don't re-play a conversation - to avoid spam
+                if(this.lastConversationTime + 10000 < Date.now() && otherWalker.lastConversationTime + 10000 < Date.now()){
+                  if(!this.hasState(CharacterState.TALKING)){
+                    // Character isnt expected to be talking already, so play a conversation
+                    useAudioContext.getState().playRandomConversation()
+                    this.addStateToQueue(CharacterState.TALKING,{duration:4,loop:false})
+
+                    if(otherWalker){
+                      // Apply the same state to the other walker
+                      otherWalker.lastConversationTime = Date.now()
+                      otherWalker.addStateToQueue(CharacterState.TALKING,{duration:4,loop:false})
+                      const faceWalker = this.object.position.clone().sub(otherWalker.object.position).normalize()
+                      faceWalker.y = 0
+                      otherWalker.changeWalkerDirection(faceWalker)
+                    }
+                  }
+                }
               }
             }
 
@@ -267,9 +357,86 @@ export class Walker {
           }
           
           // Randomly change direction occasionally
-          if (Math.random() < 0.005) {
+          let num = gaussianRandom(0.5,0.15)
+          if (num < 0.005) {
             this.changeWalkerDirection();
           }
+          num = gaussianRandom(0.5,0.15)
+
+          if (num < 0.005) {
+            if(this.currentState == CharacterState.WALKING){
+              this.addStateToQueue(CharacterState.SITTING,{duration:10,loop:false})
+            }
+          }
+
+          this.updateState()
+    }
+
+    hasState(state:CharacterState){
+        return this.stateQueue.some(item => item.state === state)
+    }
+
+    stateQueue:{state:CharacterState,duration?:number,loop?:boolean}[] = []
+    addStateToQueue(state:CharacterState, options?:{duration?:number,loop?:boolean},force?:boolean){
+
+        const duration = options?.duration || states[state].duration || 0
+        const loop = options?.loop || states[state].loop || false
+
+        if(force){
+          this.stateQueue.unshift({state,duration,loop})
+        }else{
+          this.stateQueue.push({state,duration,loop})
+        }
+
+    }
+
+    private isInFrustum(frustrum:Frustum): boolean {
+      const intersects = frustrum.intersectsBox(this.boundingBox!)
+      return intersects
+    }
+
+    currentStateDuration = 0
+    private updateState(){
+
+      if(this.currentStateDuration>0){
+        return
+      }
+        if(this.stateQueue.length>0){
+            const prevState = this.currentState
+            
+            if(this.stateQueue[0].state === prevState){
+                // If the next state in the queue is the same as the current state, remove it from the queue
+                this.stateQueue.shift()
+                return
+            }
+
+            const nextState = this.stateQueue.shift()
+            if(!nextState) return
+
+            this.currentState = nextState.state
+            let blendSpeed = 0.9*this.speed
+            if(nextState.state == CharacterState.SITTING){
+              blendSpeed = 1.2
+            }
+            Walker.animationManager.setCharacterState(this,this.currentState,blendSpeed)
+            if(nextState.state == CharacterState.TALKING){
+              this.lastConversationTime = Date.now()
+            }
+            if(nextState.duration){
+              this.currentStateDuration = nextState.duration || 0
+              
+              this.addStateToQueue(prevState,{duration:0,loop:true},true)
+              setTimeout(() => {
+                  this.currentStateDuration = 0
+              }, nextState.duration! * 1000);
+            }else if (!nextState.loop){
+              const animationDuration = Walker.animationManager.getAnimationDuration(nextState.state)
+              this.addStateToQueue(prevState,{duration:0,loop:true},true)
+              setTimeout(() => {
+                  this.currentStateDuration = 0
+              }, animationDuration! * 1000);
+            }
+        }
     }
 
     private isOutsideBounds(): boolean {
@@ -291,10 +458,15 @@ export class Walker {
         );
       }
 
-    private changeWalkerDirection(): void {
+    private changeWalkerDirection(direction?:Vector3): void {
       // Calculate direction toward center of island
       if (!this.world.innerBoundingBox) return;
       
+      if(direction){
+        this.direction.copy(direction)
+        return
+      }
+
       const centerX = (this.world.innerBoundingBox.max.x + this.world.innerBoundingBox.min.x) / 2;
       const centerZ = (this.world.innerBoundingBox.max.z + this.world.innerBoundingBox.min.z) / 2;
       
@@ -371,7 +543,7 @@ export class Walker {
             cube: newParent,
             mesh: mesh,
             direction,
-            speed: 0.1 + Math.random() * 0.5,
+            speed: 0.1 + Math.random() * 0.3,
             boundingBox: bb,
         };
 

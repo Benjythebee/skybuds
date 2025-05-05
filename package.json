@@ -11,14 +11,22 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@icons-pack/react-simple-icons": "^12.7.0",
+    "@rainbow-me/rainbowkit": "^2.2.4",
     "@tailwindcss/vite": "^4.1.4",
+    "@tanstack/react-query": "^5.75.1",
     "@types/three": "^0.173.0",
+    "cva": "1.0.0-beta.3",
     "gsap": "^3.12.7",
     "lil-gui": "^0.20.0",
+    "lucide-react": "^0.507.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "stats.js": "^0.17.0",
+    "tailwind-merge": "^3.2.0",
     "three": "^0.173.0",
+    "viem": "2.x",
+    "wagmi": "^2.15.2",
     "zustand": "^5.0.3"
   },
   "devDependencies": {

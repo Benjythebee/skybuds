@@ -6,7 +6,7 @@ import { World } from './World'
 import { Walker } from './Walker'
 
 export const CONSTANTS= {
-	maxDistance: 100,
+	maxDistance: 40,
 	minDistance: 2
 }
 
@@ -58,7 +58,7 @@ export function sceneInitializer(
 		30,
 		canvasRef.clientWidth / canvasRef.clientHeight,
 		0.1,
-		1000,
+		500,
 	);
 	
 	const renderer = new THREE.WebGLRenderer({
@@ -104,15 +104,25 @@ export function sceneInitializer(
 	const clock = new THREE.Clock()
 	const world = new World(sceneElements,scene)
 	world.load()
+
+	const frustrum = new THREE.Frustum()
+
+
 	const animate = () => {
 		stats && stats.begin()
 		setTarget(controls,scene)
 		requestAnimationFrame(animate)
+		frustrum.setFromProjectionMatrix(
+			new THREE.Matrix4().multiplyMatrices(
+				camera.projectionMatrix,
+				camera.matrixWorldInverse
+			)
+		)
 		const delta = clock.getDelta()
 		// controls.target.clamp(minPan, maxPan)
 		controls?.update()
 		world.update(delta)
-		Walker.updateWalkers(delta)
+		Walker.updateWalkers(delta,frustrum)
 		renderer.render(scene, camera)
 		stats && stats.end()
 	}

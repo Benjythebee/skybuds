@@ -1,9 +1,10 @@
 import { useViewContext } from "store/ViewContext";
-import { Box3, Box3Helper, Color, GridHelper, Group, LoadingManager, Mesh, MeshStandardMaterial, Object3D, Raycaster, Scene, SpotLight, Vector3} from "three";
+import { Box3, Box3Helper, Color,  GridHelper, Group, LoadingManager, Mesh, MeshStandardMaterial, Object3D, PerspectiveCamera, Raycaster, Scene, SpotLight, Vector3} from "three";
 import { GLTFLoader } from "three/examples/jsm/Addons.js";
 import { gui } from "./config";
 import DayNightCycle from "./dayNightCycle";
 import { LightObject } from "./LightObject";
+import { setupLightHouseBeam } from "./object/LightHouseBeam";
 
 
 /***
@@ -16,14 +17,36 @@ export const worldParameters = {
     paused:false,
     debug:false,
     worldTime:0.25,
+    setTime:0.25,
+    alwaysDay:false,
+    islandHidden:false,
 }
 const onWorldToggleDebug = (value:boolean)=>{
   World.instance.toggleDebug()
+  World.instance.dayNightCycle.moonHelper!.visible = value
+  World.instance.dayNightCycle.sunHelper!.visible = value
 }
 
 folder2.add(worldParameters, 'paused').name('Paused')
 folder2.add(worldParameters, 'debug').name('Debug').onChange(onWorldToggleDebug)
 folder2.add(worldParameters, 'worldTime').name('worldTime').listen().disable()
+folder2.add(worldParameters, 'setTime', 0, 1).name('Set Time').onChange((value:number)=>{
+  World.instance.dayNightCycle.setTimeOfDay(value)
+})
+folder2.add(worldParameters, 'alwaysDay').name('Always Day').onChange((value:boolean)=>{
+  if(value){
+    World.instance.dayNightCycle.setTimeOfDay(0.505)
+    World.instance.dayNightCycle.constantTime = true
+  }else{
+    World.instance.dayNightCycle.setTimeOfDay(worldParameters.worldTime)
+    World.instance.dayNightCycle.constantTime = false
+  }
+})
+folder2.add(worldParameters, 'islandHidden').name('Hide island').onChange((value:boolean)=>{
+  if(World.instance.island){
+    World.instance.baseMesh.visible = !value
+  }
+})
 folder2.open()
 
 export class World {
@@ -82,8 +105,15 @@ export class World {
       if(this.debugGrid){
         this.debugGrid.visible = this.isDebug
       }
+      if(this.lightHouseBeam){
+        this.lightHouseBeam.spotlightHelper.visible = this.isDebug
+      }
     }
 
+
+    lightHouseBeam:ReturnType<typeof setupLightHouseBeam> & {
+      target:Group
+    } = null!
     private setupLights = () => {
       this.island.traverse((child) => {
         if ((child as Mesh).isMesh || (child as any).isSkinnedMesh) {
@@ -99,10 +129,26 @@ export class World {
             }
             if(child.name.includes('M_Light_House')){
               //@TODO: add light house light
+
+              const {light,parent,mesh,spotlightHelper} = setupLightHouseBeam()
+              this.island.add(parent)
+              const target = new Group()
+              this.island.add(target)
+              target.position.copy(child.position)//.add(new Vector3(0, 1, 0))
+              parent.position.copy(child.position).add(new Vector3(0, 2.25, 0))
+              this.lightHouseBeam = {light,parent,mesh,spotlightHelper,target:target}
+
+              spotlightHelper.update()
+
+              mesh.material.uniforms.lightColor.value.set(new Color('#ffffaa'))
+              mesh.material.uniforms.spotPosition.value	= mesh.position.clone()
+
+
             }
 
             if(child.name.includes('lantern')){
-              newLightObject.light.angle = Math.PI / 2.5
+              newLightObject.light.angle = Math.PI / 1.2
+              newLightObject.light.penumbra = 0.5
               newLightObject.light.position.add(new Vector3(0, -0.65, 0))
             }
 
@@ -193,6 +239,35 @@ export class World {
       this.lightObjects.forEach(lightObject=>{
         lightObject.update()
       })
+
+      if(this.lightHouseBeam){
+        const timeOfDay = this.dayNightCycle.getTimeOfDay()
+        let intensity = 1-Math.sin(timeOfDay * Math.PI)
+        this.lightHouseBeam.light.intensity = intensity * 5
+        this.lightHouseBeam.mesh.material.uniforms.intensityModifier.value = intensity
+        
+        const radius = 5
+        const speed = 0.2 // radians per second
+        const center = this.lightHouseBeam.parent.position.clone().add(this.island.position)
+        const target = this.lightHouseBeam.target
+        // Get the current position relative to center
+        const relativePos = target.position.clone().sub(center);
+        
+        // Calculate current angle in radians
+        const currentAngle = Math.atan2(relativePos.z, relativePos.x);
+        
+        // Calculate new angle based on speed and delta time
+        const newAngle = currentAngle + speed * delta;
+        
+        // Update position to follow circular path
+        target.position.x = center.x + radius * Math.cos(newAngle);
+        target.position.z = center.z + radius * Math.sin(newAngle);
+        target.position.y = center.y //+ 1.5
+        this.lightHouseBeam.light.target.position.copy(target.position)
+        // this.lightHouseBeam.light.lookAt(target.position)
+        this.lightHouseBeam.mesh.lookAt(target.position)
+        this.lightHouseBeam.spotlightHelper.update()
+      }
     }
     
 }
