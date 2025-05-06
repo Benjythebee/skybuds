@@ -505,7 +505,7 @@ export class Walker {
         const material = new MeshStandardMaterial({
           color: Math.random() * 0xffffff,
         });
-        
+
         const newParent = SkeletonUtils.clone(Walker.rootCharacter)
         newParent.name = 'walker_parent'
         newParent.frustumCulled = false
@@ -548,7 +548,7 @@ export class Walker {
         };
 
         this.walkers.push(new Walker(world,walker));
-        world.parent.add(newParent);
+        world.scene.add(newParent);
     }
 }
 

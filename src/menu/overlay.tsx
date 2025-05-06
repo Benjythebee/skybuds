@@ -108,9 +108,6 @@ export const Overlay: React.FC<ChillMenuProps> = () => {
                     text-lg font-light flex items-center gap-2`}
                 >
                    <SiX size={24} /> @Benjythebee 
-                  {/* <div className='flex items-center gap-2'>
-
-                  </div> */}
                 </a>
             </li>
         </ul>}

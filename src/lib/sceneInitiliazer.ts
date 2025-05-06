@@ -51,9 +51,6 @@ export function sceneInitializer(
 
 	// scene.add(directionalLight,directionalLight2)
 
-	const sceneElements = new THREE.Object3D()
-	scene.add(sceneElements)
-
 	const camera = new THREE.PerspectiveCamera(
 		30,
 		canvasRef.clientWidth / canvasRef.clientHeight,
@@ -102,7 +99,7 @@ export function sceneInitializer(
 	renderer.setClearColor(0x000000, 0)
 
 	const clock = new THREE.Clock()
-	const world = new World(sceneElements,scene)
+	const world = new World(scene)
 	world.load()
 
 	const frustrum = new THREE.Frustum()
@@ -135,7 +132,7 @@ export function sceneInitializer(
 		camera,
         world,
 		controls,
-		sceneElements,
+		sceneElements:scene,
 		clock,
 	}
 }

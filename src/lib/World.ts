@@ -22,7 +22,9 @@ export const worldParameters = {
     islandHidden:false,
 }
 const onWorldToggleDebug = (value:boolean)=>{
+  World.instance.isDebug = value
   World.instance.toggleDebug()
+  World.instance.innerBoundingBoxHelper.visible =value
   World.instance.dayNightCycle.moonHelper!.visible = value
   World.instance.dayNightCycle.sunHelper!.visible = value
 }
@@ -64,8 +66,9 @@ export class World {
     meshesExcludingIsland:Mesh[] = []
 
     lightObjects:LightObject[] = []
-
-    constructor(public parent:Object3D, public scene:Scene) {
+    debugGrid:GridHelper = null!
+    innerBoundingBoxHelper:Box3Helper = null!
+    constructor(public scene:Scene) {
         this.loadManager = new LoadingManager()
         this.GLTFLoader = new GLTFLoader(this.loadManager)
         this.loadManager.onStart = () => {
@@ -88,7 +91,7 @@ export class World {
         World.instance =this
     }
 
-    debugGrid:GridHelper = null!
+
     renderGrid = () => {
         this.debugGrid = new GridHelper(100, 100, 0x0000ff, 0x808080)
         // gridHelper.rotation.x = Math.PI / 2
@@ -97,7 +100,7 @@ export class World {
         this.scene.add(this.debugGrid)
     }
 
-    innerBoundingBoxHelper:Box3Helper = null!
+
     toggleDebug(){
       if(this.innerBoundingBoxHelper){
         this.innerBoundingBoxHelper.visible = this.isDebug
@@ -130,18 +133,23 @@ export class World {
             if(child.name.includes('M_Light_House')){
               //@TODO: add light house light
 
-              const {light,parent,mesh,spotlightHelper} = setupLightHouseBeam()
-              this.island.add(parent)
+              const {light,parent,mesh:lightMesh,spotlightHelper} = setupLightHouseBeam()
+
+              const targetPos = child.position.clone().add(this.island.position.clone())
+              const newPos = child.position.clone().add(this.island.position.clone()).add(new Vector3(0, 2.25, 0))
+
               const target = new Group()
-              this.island.add(target)
-              target.position.copy(child.position)//.add(new Vector3(0, 1, 0))
-              parent.position.copy(child.position).add(new Vector3(0, 2.25, 0))
-              this.lightHouseBeam = {light,parent,mesh,spotlightHelper,target:target}
+              this.scene.add(parent)
+              this.scene.add(target)
+
+              parent.position.copy(newPos)
+              target.position.copy(targetPos)
+              this.lightHouseBeam = {light,parent,mesh:lightMesh,spotlightHelper,target:target}
 
               spotlightHelper.update()
 
-              mesh.material.uniforms.lightColor.value.set(new Color('#ffffaa'))
-              mesh.material.uniforms.spotPosition.value	= mesh.position.clone()
+              lightMesh.material.uniforms.lightColor.value.set(new Color('#ffffaa'))
+              lightMesh.material.uniforms.spotPosition.value	= lightMesh.position.clone()
 
 
             }
@@ -192,10 +200,10 @@ export class World {
            */
         this.innerBoundingBoxHelper = new Box3Helper(this.innerBoundingBox, 0xffff00);
         this.innerBoundingBoxHelper.visible = this.isDebug
-        this.parent.add(this.innerBoundingBoxHelper);
+        this.scene.add(this.innerBoundingBoxHelper);
         this.innerBoundingBoxHelper.updateMatrix()
         // this.baseMesh.visible = false
-       this.parent.add(this.island)
+       this.scene.add(this.island)
     }
 
 
@@ -248,7 +256,7 @@ export class World {
         
         const radius = 5
         const speed = 0.2 // radians per second
-        const center = this.lightHouseBeam.parent.position.clone().add(this.island.position)
+        const center = this.lightHouseBeam.parent.position.clone()
         const target = this.lightHouseBeam.target
         // Get the current position relative to center
         const relativePos = target.position.clone().sub(center);
@@ -263,8 +271,9 @@ export class World {
         target.position.x = center.x + radius * Math.cos(newAngle);
         target.position.z = center.z + radius * Math.sin(newAngle);
         target.position.y = center.y //+ 1.5
+        
         this.lightHouseBeam.light.target.position.copy(target.position)
-        // this.lightHouseBeam.light.lookAt(target.position)
+
         this.lightHouseBeam.mesh.lookAt(target.position)
         this.lightHouseBeam.spotlightHelper.update()
       }
