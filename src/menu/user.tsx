@@ -1,7 +1,7 @@
 import { ConnectWalletButton } from "components/connectButton"
 import { PlusCircle } from "lucide-react"
 import { useAccount } from "wagmi"
-import { Tabs } from "./overlay"
+import { Tabs } from "./RightMenu"
 
 export const UserMenu = ({setPage}:{setPage:(val:Tabs)=>void}) => {
 

@@ -7,7 +7,7 @@ import { Walker } from './Walker'
 
 export const CONSTANTS= {
 	maxDistance: 40,
-	minDistance: 2
+	minDistance: 1
 }
 
 export function sceneInitializer(
@@ -69,22 +69,28 @@ export function sceneInitializer(
 	renderer.toneMappingExposure = 1.0
 	renderer.shadowMap.enabled = true
 	renderer.shadowMap.type = THREE.PCFSoftShadowMap
-    camera.position.set(0, 2*5, 5*5)
+    camera.position.set(0, 2*4, 5*5)
 	camera.near = 0.01
 	const controls = new OrbitControls(camera, renderer.domElement)
 	controls.minDistance = CONSTANTS.minDistance
 	controls.maxDistance = CONSTANTS.maxDistance
 	// controls.minPolarAngle = (Math.PI / 2)-0.1
 	// controls.maxPolarAngle = Math.PI 
+
     controls.autoRotate = false
 	controls.enablePan =true
+
 	controls.enableZoom =true
 
-	controls.target = new THREE.Vector3(0, 5, 0)
+	controls.target = new THREE.Vector3(0, 2, 0)
 	controls.enableDamping = true
 	controls.dampingFactor = 0.1
 
-
+	camera.userData={
+		initPosition:camera.position.clone(),
+		initRotation:camera.rotation.clone(),
+		controlTarget:controls.target.clone(),
+	}
 	const handleResize = () => {
 		renderer.setSize(window.innerWidth, window.innerHeight)
 		camera.aspect = window.innerWidth / window.innerHeight
@@ -99,18 +105,18 @@ export function sceneInitializer(
 	renderer.setClearColor(0x000000, 0)
 
 	const clock = new THREE.Clock()
-	const world = new World(scene)
+	const world = new World(scene,controls,camera)
 	world.load()
 
 	const frustrum = new THREE.Frustum()
 
-
+	let matrix = new THREE.Matrix4()
 	const animate = () => {
 		stats && stats.begin()
-		setTarget(controls,scene)
+
 		requestAnimationFrame(animate)
 		frustrum.setFromProjectionMatrix(
-			new THREE.Matrix4().multiplyMatrices(
+			matrix.multiplyMatrices(
 				camera.projectionMatrix,
 				camera.matrixWorldInverse
 			)
@@ -127,6 +133,14 @@ export function sceneInitializer(
 	animate()
 	Walker.loadRoot(scene)
 
+	const handleMouseClick = (event: MouseEvent)=>{
+		const rect = canvasRef.getBoundingClientRect()
+		const mousex = ((event.clientX - rect.left) / rect.width) * 2 - 1
+		const mousey = -((event.clientY - rect.top) / rect.height) * 2 + 1
+		Walker.pickFromMouseClick(mousex,mousey)
+	}
+	canvasRef.addEventListener('click', handleMouseClick)
+
 	return {
 		scene,
 		camera,
@@ -140,25 +154,25 @@ export function sceneInitializer(
 const min = new THREE.Vector3(0, 0.0, 0)
 const max = new THREE.Vector3(0, 1.6, 0)
 
-const setTarget = (controls:OrbitControls,scene:THREE.Scene)=>{
-	if(!controls) return
+// const setTarget = (controls:OrbitControls,scene:THREE.Scene)=>{
+// 	if(!controls) return
 
-	const target = controls.target.clone()
-	const distance = controls.getDistance()
-	// console.log('distance',distance)
-	let maxDistance = controls.maxDistance
-	let minDistance = controls.minDistance
-	if(maxDistance === minDistance) {
-		maxDistance = CONSTANTS.maxDistance
-		minDistance = CONSTANTS.minDistance
-	}
-	// get the lerp ratio of distance between min and max distance
-	const ratio = (distance - minDistance) / (maxDistance - minDistance)
+// 	const target = controls.target.clone()
+// 	const distance = controls.getDistance()
+// 	// console.log('distance',distance)
+// 	let maxDistance = controls.maxDistance
+// 	let minDistance = controls.minDistance
+// 	if(maxDistance === minDistance) {
+// 		maxDistance = CONSTANTS.maxDistance
+// 		minDistance = CONSTANTS.minDistance
+// 	}
+// 	// get the lerp ratio of distance between min and max distance
+// 	const ratio = (distance - minDistance) / (maxDistance - minDistance)
 	
-	const newTarget = new THREE.Vector3(0, min.y + (max.y-min.y) * (1-ratio), 0)
-	if(newTarget.y === target.y) return
+// 	const newTarget = new THREE.Vector3(0, min.y + (max.y-min.y) * (1-ratio), 0)
+// 	if(newTarget.y === target.y) return
 
-	// move the trget y position to the camera y position
-	controls.target.y = newTarget.y
+// 	// move the trget y position to the camera y position
+// 	controls.target.y = newTarget.y
 
-}
+// }

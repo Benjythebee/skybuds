@@ -1,11 +1,11 @@
 import { useViewContext } from "store/ViewContext";
-import { Box3, Box3Helper, Color,  GridHelper, Group, LoadingManager, Mesh, MeshStandardMaterial, Object3D, PerspectiveCamera, Raycaster, Scene, SpotLight, Vector3} from "three";
-import { GLTFLoader } from "three/examples/jsm/Addons.js";
+import { Box3, Box3Helper, Color,  FrontSide,  GridHelper, Group, LoadingManager, Mesh, MeshStandardMaterial, Object3D, PerspectiveCamera, Raycaster, Scene, SpotLight, Vector3} from "three";
+import { GLTFLoader, OrbitControls } from "three/examples/jsm/Addons.js";
 import { gui } from "./config";
 import DayNightCycle from "./dayNightCycle";
 import { LightObject } from "./LightObject";
 import { setupLightHouseBeam } from "./object/LightHouseBeam";
-
+import gsap from "gsap";
 
 /***
  * =============================
@@ -68,7 +68,7 @@ export class World {
     lightObjects:LightObject[] = []
     debugGrid:GridHelper = null!
     innerBoundingBoxHelper:Box3Helper = null!
-    constructor(public scene:Scene) {
+    constructor(public scene:Scene,public controls:OrbitControls,public camera:PerspectiveCamera) {
         this.loadManager = new LoadingManager()
         this.GLTFLoader = new GLTFLoader(this.loadManager)
         this.loadManager.onStart = () => {
@@ -120,7 +120,9 @@ export class World {
     private setupLights = () => {
       this.island.traverse((child) => {
         if ((child as Mesh).isMesh || (child as any).isSkinnedMesh) {
-
+          if((child as any).material){
+            ;(child as any).material!.side = FrontSide;
+          }
           if(((child as any).material as MeshStandardMaterial).emissiveMap){
             // Fire-like color
             const newLightObject = new LightObject(this, child as any)
@@ -278,6 +280,61 @@ export class World {
         this.lightHouseBeam.spotlightHelper.update()
       }
     }
+
+      moveCamera = (value:{
+          // left half center
+          targetX?: number,
+          targetY?: number,
+          targetZ?: number,
+          distance?: number,
+        }) => {
+          const controls = this.controls
+          const camera = this.camera
+          if (!controls) return new Promise((resolve) => resolve(false))
+          return new Promise((resolve) => {
+            
+            gsap.to(controls.target, {
+              x: value.targetX ?? 0,
+              y: value.targetY ?? 0,
+              z: value.targetZ ?? 0,
+              duration: 1,
+            })
+        
+            gsap
+              .fromTo(
+                controls,
+                {
+                  maxDistance: controls.getDistance(),
+                  minDistance: controls.getDistance(),
+                  // minPolarAngle: controls.getPolarAngle(),
+                  // maxPolarAngle: controls.getPolarAngle(),
+                  // minAzimuthAngle: controls.getAzimuthalAngle(),
+                  // maxAzimuthAngle: controls.getAzimuthalAngle(),
+                },
+                {
+                  maxDistance: value.distance,
+                  minDistance: value.distance,
+                  // minPolarAngle: Math.PI / 2 - 0.11,
+                  // maxPolarAngle: Math.PI / 2 + 0.11,
+                  // minAzimuthAngle: Infinity,
+                  // maxAzimuthAngle: Infinity,
+                  duration: 1,
+                },
+              )
+              .then(() => {
+                // controls.minPolarAngle = 0
+                // controls.maxPolarAngle = Math.PI
+                controls.minDistance = 0.05
+                controls.maxDistance = 40
+                // controls.minAzimuthAngle = Infinity
+                // controls.maxAzimuthAngle = Infinity
+
+
+              })
+            resolve(true)
+          })
+          
+      }
     
 }
 

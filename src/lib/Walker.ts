@@ -1,4 +1,4 @@
-import { ArrowHelper, Box3, BoxGeometry, Group, LoadingManager, Mesh, MeshStandardMaterial, SkinnedMesh, Raycaster, Scene, Object3D, Vector3, Box3Helper, PerspectiveCamera, Frustum, Bone } from "three";
+import { ArrowHelper, Box3, BoxGeometry, Group, LoadingManager, Mesh, MeshStandardMaterial, SkinnedMesh, Raycaster, Scene, Object3D, Vector3, Box3Helper, PerspectiveCamera, Frustum, Bone, Vector2 } from "three";
 import { World, worldParameters} from "./World";
 import { FontLoader, GLTFLoader, SkeletonUtils } from "three/examples/jsm/Addons.js";
 import { useAudioContext } from "store/AudioContext";
@@ -6,6 +6,7 @@ import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { gui } from "./config";
 import { AnimationManager } from "./animationManager";
 import { remove } from "three/examples/jsm/libs/tween.module.js";
+import {EventEmitter} from "events";
 
 
 ////// HEEEEEEEERRRRREEEEEEEEEEE https://stackblitz.com/edit/three-ezinstancedmesh2-skinning?file=src%2Fmain.ts
@@ -66,14 +67,27 @@ const states:Record<CharacterState,{duration?:number,loop:boolean}> = {
     loop: true,
   }
 }
+type WalkerMetaInfo = {
+  name:string,
+  talkative:boolean,
+  laziness:number,
+  speed:number,
+  image_url:string,
+  creator:string,
+  description:string,
+}
 
-type walker = {
+type walkerParams = {
     cube: Object3D;
     mesh: SkinnedMesh;
     direction: Vector3;
     speed: number;
     boundingBox: Box3 | null;
+    walkerInfo?:WalkerMetaInfo
   };
+
+
+const mouse = new Vector2()
 
 function gaussianRandom(mean=0, stdev=1, max:number=1, min:number = 0): number {
   const u = 1 - Math.random(); // Converting [0,1) to (0,1]
@@ -90,7 +104,8 @@ export class Walker {
     static rootCharacter: Object3D = null!
     static loaderManager: LoadingManager = new LoadingManager()
     static gltfLoader: GLTFLoader = new GLTFLoader(this.loaderManager)
-    
+    static clickRayCast: Raycaster = new Raycaster()
+    static events: EventEmitter = new EventEmitter()
     id: number
     object: Object3D;
     mesh: SkinnedMesh;
@@ -101,6 +116,15 @@ export class Walker {
     currentState: CharacterState = CharacterState.WALKING
     lastConversationTime = Date.now()    
 
+    walkerInfo:WalkerMetaInfo = {
+      name:'Walker',
+      talkative:true,
+      laziness:0.5,
+      speed:0.1,
+      image_url:'',
+      creator:'0x',
+      description:'A walker',
+    }
     
     collisionRayCasters = [new Raycaster(),new Raycaster()]
     collisionMesh: Mesh 
@@ -111,7 +135,7 @@ export class Walker {
 
     static animationManager:AnimationManager = new AnimationManager()
 
-    constructor(public world:World,props:walker){
+    constructor(public world:World,props:walkerParams){
         this.id = Walker.walkers.length
         this.object = props.cube
         this.mesh = props.mesh
@@ -152,6 +176,61 @@ export class Walker {
         this.collisionMesh.updateMatrix()
 
         Walker.animationManager.addCharacter(this, this.currentState,{speed:this.speed})
+    }
+
+    static focusedWalker:Walker|null = null
+    static async pickFromMouseClick(mouseX: number, mouseY: number){
+      mouse.x= mouseX
+      mouse.y= mouseY
+      const camera = World.instance.camera as PerspectiveCamera
+      Walker.clickRayCast.setFromCamera(mouse, camera)
+      const intersects = Walker.clickRayCast.intersectObjects(Walker.walkers.map(walker => walker.collisionMesh),false)
+      if(intersects.length>0){
+        const walker = (intersects[0].object as any).walker as Walker
+        this.focusedWalker = walker
+        
+        let worldPosition= new Vector3()
+        walker.collisionMesh.getWorldPosition(worldPosition)
+        worldPosition.add(new Vector3(0,Walker.size/5,0))
+
+        //create mesh at new worldPosition
+        await World.instance.moveCamera({
+          targetX: worldPosition.x,
+          targetY: worldPosition.y,
+          targetZ: worldPosition.z,
+          distance:0.8,
+        })
+        // // Make the walker face the camera
+        const direction = new Vector3(
+          camera.position.x - walker.object.position.x,
+          0,
+          camera.position.z - walker.object.position.z
+        ).normalize();
+
+        walker.direction.copy(direction) 
+
+        Walker.events.emit('walkerSelected',walker)
+        walker.addStateToQueue(CharacterState.WAVING,{duration:5,loop:false},true)
+      }
+    }
+
+    static async unFocusWalker(){
+      if(this.focusedWalker){
+        this.focusedWalker = null;
+        this.events.emit('walkerUnselected')
+        // Reset camera state
+        const cameraInit = World.instance.camera.userData.initPosition.clone()
+        const controlTarget = World.instance.camera.userData.controlTarget.clone()
+        // World.instance.camera.position.set(cameraInit.position.x, cameraInit.position.y, cameraInit.position.z);
+        await World.instance.moveCamera({
+          targetX: controlTarget.x,
+          targetY: controlTarget.y,
+          targetZ: controlTarget.z,
+          distance:18,
+        })
+        World.instance.controls.target = controlTarget
+        World.instance.camera.position.set(cameraInit.x, cameraInit.y, cameraInit.z);
+      }
     }
 
     static isDebug = false
@@ -237,12 +316,12 @@ export class Walker {
 
     update(deltaTime: number) {
 
-        if(this.currentState == CharacterState.TALKING || this.currentState == CharacterState.SITTING){
+        if(this.currentState == CharacterState.TALKING || this.currentState == CharacterState.SITTING || this.currentState == CharacterState.WAVING){
           this.updateState()
           return
         }
 
-        
+        const oldPosition = this.object.position.clone()
         // Calculate new position based on direction and speed
         const newPosition = this.object.position.clone().add(
             this.direction.clone().multiplyScalar(this.speed * deltaTime)
@@ -269,6 +348,16 @@ export class Walker {
             this.object.position.copy(newPosition);
 
             this.object.rotation.y = Math.atan2(this.direction.x, this.direction.z)
+
+            if(Walker.focusedWalker?.id == this.id){
+              // Move controls to new position so we're always following the walker but  we allow the camera to move freely
+              const camera = World.instance.camera;
+
+              const delta = newPosition.clone().sub(oldPosition);
+
+              World.instance.controls.target = newPosition.add(new Vector3(0,Walker.size/2,0))
+              camera.position.add(delta);
+            }
 
             // console.log('newPosition',newPosition)
             // Update bounding box
@@ -500,7 +589,7 @@ export class Walker {
         }
     }
 
-    static create(world:World,position?:Vector3) {
+    static create(world:World,position?:Vector3,focus?:boolean) {
 
         const material = new MeshStandardMaterial({
           color: Math.random() * 0xffffff,
@@ -539,7 +628,7 @@ export class Walker {
         let bb = new Box3().setFromObject(mesh)
 
         // Create walker
-        const walker: walker = {
+        const walker: walkerParams = {
             cube: newParent,
             mesh: mesh,
             direction,

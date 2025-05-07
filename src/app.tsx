@@ -1,10 +1,11 @@
 import { SceneProvider } from "store/SceneContext";
 import Scene from "./scene";
-import { Overlay } from "menu/overlay";
+import { RightMenu } from "menu/RightMenu";
 import { gui } from "lib/config";
 import React from "react";
 import { Loader } from "./loader";
 import { Web3Provider } from "lib/web3/provider";
+import { Overlay } from "./menu/Overlay";
 
 
 export const App = () => {
@@ -21,8 +22,9 @@ export const App = () => {
                 <Loader />
                 <Scene />
                 <Web3Provider>
-                    <Overlay />
+                    <RightMenu />
                 </Web3Provider>
+                <Overlay />
                 <div className="absolute z-10 top-8 left-2">
                     <div  ref={ref} id="gui_container" />
                 </div>

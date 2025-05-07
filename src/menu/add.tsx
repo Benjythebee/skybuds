@@ -1,6 +1,6 @@
 import React from "react"
 import { useAccount } from "wagmi"
-import { Tabs } from "./overlay"
+import { Tabs } from "./RightMenu"
 
 export const AddTab = ({setPage}:{setPage:(val:Tabs)=>void}) => {
 
