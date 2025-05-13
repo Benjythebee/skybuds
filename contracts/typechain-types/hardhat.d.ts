@@ -66,13 +66,25 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.SafeCast__factory>;
     getContractFactory(
+      name: "ReentrancyGuard",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.ReentrancyGuard__factory>;
+    getContractFactory(
       name: "Strings",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Strings__factory>;
     getContractFactory(
+      name: "MetadataEncoding",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.MetadataEncoding__factory>;
+    getContractFactory(
       name: "SkyBuds",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.SkyBuds__factory>;
+    getContractFactory(
+      name: "SkyBudsMetadata",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.SkyBudsMetadata__factory>;
 
     getContractAt(
       name: "Ownable",
@@ -140,15 +152,30 @@ declare module "hardhat/types/runtime" {
       signer?: ethers.Signer
     ): Promise<Contracts.SafeCast>;
     getContractAt(
+      name: "ReentrancyGuard",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.ReentrancyGuard>;
+    getContractAt(
       name: "Strings",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.Strings>;
     getContractAt(
+      name: "MetadataEncoding",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.MetadataEncoding>;
+    getContractAt(
       name: "SkyBuds",
       address: string | ethers.Addressable,
       signer?: ethers.Signer
     ): Promise<Contracts.SkyBuds>;
+    getContractAt(
+      name: "SkyBudsMetadata",
+      address: string | ethers.Addressable,
+      signer?: ethers.Signer
+    ): Promise<Contracts.SkyBudsMetadata>;
 
     deployContract(
       name: "Ownable",
@@ -203,13 +230,25 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.SafeCast>;
     deployContract(
+      name: "ReentrancyGuard",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ReentrancyGuard>;
+    deployContract(
       name: "Strings",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Strings>;
     deployContract(
+      name: "MetadataEncoding",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.MetadataEncoding>;
+    deployContract(
       name: "SkyBuds",
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.SkyBuds>;
+    deployContract(
+      name: "SkyBudsMetadata",
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.SkyBudsMetadata>;
 
     deployContract(
       name: "Ownable",
@@ -277,15 +316,30 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.SafeCast>;
     deployContract(
+      name: "ReentrancyGuard",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.ReentrancyGuard>;
+    deployContract(
       name: "Strings",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.Strings>;
     deployContract(
+      name: "MetadataEncoding",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.MetadataEncoding>;
+    deployContract(
       name: "SkyBuds",
       args: any[],
       signerOrOptions?: ethers.Signer | DeployContractOptions
     ): Promise<Contracts.SkyBuds>;
+    deployContract(
+      name: "SkyBudsMetadata",
+      args: any[],
+      signerOrOptions?: ethers.Signer | DeployContractOptions
+    ): Promise<Contracts.SkyBudsMetadata>;
 
     // default types
     getContractFactory(

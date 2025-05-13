@@ -1,5 +1,5 @@
 import { useViewContext } from "store/ViewContext";
-import { Box3, Box3Helper, Color,  FrontSide,  GridHelper, Group, LoadingManager, Mesh, MeshStandardMaterial, Object3D, PerspectiveCamera, Raycaster, Scene, SpotLight, Vector3} from "three";
+import { ArrowHelper, Box3, Box3Helper, Color,  FrontSide,  GridHelper, Group, LoadingManager, Mesh, MeshStandardMaterial, Object3D, PerspectiveCamera, Raycaster, Scene, SpotLight, Vector3} from "three";
 import { GLTFLoader, OrbitControls } from "three/examples/jsm/Addons.js";
 import { gui } from "./config";
 import DayNightCycle from "./dayNightCycle";
@@ -88,6 +88,7 @@ export class World {
 
         this.dayNightCycle = new DayNightCycle(this.scene)
         this.renderGrid()
+
         World.instance =this
     }
 

@@ -1,51 +1,110 @@
 // contracts/SkyBuds.sol
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
-
-import {ERC721URIStorage, ERC721 } from "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
+import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "./SkybudsMetadata.sol";
 
-contract SkyBuds is ERC721URIStorage, Ownable {
+contract SkyBuds is ReentrancyGuard,ERC721, Ownable {
     uint256 private _nextTokenId = 1;
 
-    // Mapping to track if a name is already taken
-    mapping(bytes32 => bool) private nameExists;
+    SkyBudsMetadata public contractSkybudsMetadata;
 
-    // Base URI required to interact with IPFS
-    string private _baseURIExtended;
+    uint256 public constant MAX_TOKENS = 2000;
 
-    constructor() Ownable(msg.sender) ERC721("SkyBuds", "SKB") {
-        _setBaseURI("ipfs://");
-    }
-        // Sets the base URI for the collection
-    function _setBaseURI(string memory baseURI) private {
-        _baseURIExtended = baseURI;
+
+    constructor(address _addressContractMetadata) Ownable(msg.sender) ReentrancyGuard() ERC721("SkyBuds", "SKB") {
+        setMetadataContractAddress(_addressContractMetadata);
+
     }
 
-    // Overrides the default function to enable ERC721URIStorage to get the updated baseURI
-    function _baseURI() internal view override returns (string memory) {
-        return _baseURIExtended;
+    function setMetadataContractAddress(address _addressContractMetadata) public onlyOwner {
+		contractSkybudsMetadata = SkyBudsMetadata(_addressContractMetadata);
+	}
+
+    function tokenURI(
+        uint256 tokenId
+    ) public view override returns (string memory) {
+        require(contractSkybudsMetadata != SkyBudsMetadata(address(0)), "Metadata contract not set");
+        require(tokenId <=_nextTokenId-1, "URI query for nonexistent token");
+
+        return contractSkybudsMetadata.generateTokenURI(tokenId);
     }
 
-    // Function to check if a name is already taken
-    function isNameTaken(string memory name) public view returns (bool) {
-        return nameExists[keccak256(abi.encodePacked(name))];
-    }
 
     function totalSupply() public view returns (uint256) {
         return _nextTokenId - 1;
     }
 
         // Allows minting of a new NFT 
-    function mint(string memory name, string memory metadataURI) public returns (uint256) {
+    function mint( 
+    uint256[] calldata wearables,
+    uint256  laziness, 
+    uint256  speed,  
+    uint256  isTalkative, 
+    string memory color, 
+    string calldata base64uri
+    ) public returns (uint256) {
         uint256 tokenId = _nextTokenId++;
-        require(bytes(metadataURI).length > 0, "Metadata URI cannot be empty");
-        require(bytes(name).length > 0, "Name cannot be empty");
-        require(!isNameTaken(name), "Name already taken");
+        require(tokenId <= MAX_TOKENS, "Max tokens minted");
+        
+        require(bytes(base64uri).length > 0, "Base64 URI cannot be empty");
+
+        
+        contractSkybudsMetadata.setMetadata(
+            tokenId,
+            wearables,
+            isTalkative==1,
+            speed,
+            laziness,
+            color,
+            base64uri
+        );
 
         _safeMint(msg.sender, tokenId);
-        _setTokenURI(tokenId, metadataURI);
-        nameExists[keccak256(abi.encodePacked(name))] = true;
+
+
         return tokenId;
     }
+
+    function updateWearables(uint256 tokenId, uint256[] calldata wearableIds) public {
+        require(tokenId <= _nextTokenId-1, "Wearable update for nonexistent token");
+        require(ownerOf(tokenId) == msg.sender, "Only the owner can update wearables");
+
+        contractSkybudsMetadata.updateWearables(tokenId, wearableIds);
+    }
+
+    function updateBase64Uri(uint256 tokenId, string memory base64Uri) public onlyOwner() {
+        require(tokenId <= _nextTokenId-1, "Wearable update for nonexistent token");
+        require(ownerOf(tokenId) == msg.sender, "Only the owner can update wearables");
+        require(bytes(base64Uri).length > 0, "Base64 URI cannot be empty");
+
+        contractSkybudsMetadata.updateBase64Uri(tokenId, base64Uri);
+    }
+
+    function updateMetadata(
+        uint256 tokenId,
+        uint256[] calldata wearables,
+        uint256 laziness,
+        uint256 speed,
+        uint256 isTalkative,
+        string memory color,
+        string calldata base64uri
+    ) public {
+        require(tokenId <= _nextTokenId-1, "Metadata update for nonexistent token");
+        require(ownerOf(tokenId) == msg.sender, "Only the owner can update metadata");
+
+        contractSkybudsMetadata.setMetadata(
+            tokenId,
+            wearables,
+            isTalkative==1,
+            speed,
+            laziness,
+            color,
+            base64uri
+        );
+    }   
 }

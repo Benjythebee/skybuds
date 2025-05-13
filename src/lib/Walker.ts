@@ -7,6 +7,7 @@ import { gui } from "./config";
 import { AnimationManager } from "./animationManager";
 import { remove } from "three/examples/jsm/libs/tween.module.js";
 import {EventEmitter} from "events";
+import { WearableHat } from "./wearables/Wearable";
 
 
 ////// HEEEEEEEERRRRREEEEEEEEEEE https://stackblitz.com/edit/three-ezinstancedmesh2-skinning?file=src%2Fmain.ts
@@ -71,8 +72,10 @@ type WalkerMetaInfo = {
   name:string,
   talkative:boolean,
   laziness:number,
+  tokenId:number,
   speed:number,
   image_url:string,
+  color:number
   creator:string,
   description:string,
 }
@@ -81,7 +84,7 @@ type walkerParams = {
     cube: Object3D;
     mesh: SkinnedMesh;
     direction: Vector3;
-    speed: number;
+    walkerMeta: WalkerMetaInfo
     boundingBox: Box3 | null;
     walkerInfo?:WalkerMetaInfo
   };
@@ -89,7 +92,7 @@ type walkerParams = {
 
 const mouse = new Vector2()
 
-function gaussianRandom(mean=0, stdev=1, max:number=1, min:number = 0): number {
+function gaussianRandom(mean=0, stdev=1): number {
   const u = 1 - Math.random(); // Converting [0,1) to (0,1]
   const v = Math.random();
   const z = Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
@@ -110,24 +113,28 @@ export class Walker {
     object: Object3D;
     mesh: SkinnedMesh;
     direction: Vector3;
-    speed: number;
+    paused: boolean = false
     boundingBox: Box3 | null;
     raycaster: Raycaster = new Raycaster()
     currentState: CharacterState = CharacterState.WALKING
     lastConversationTime = Date.now()    
 
     walkerInfo:WalkerMetaInfo = {
-      name:'Walker',
+      name:'Skybud #000',
+      color:Math.random() * 0xffffff,
+      tokenId:0,
       talkative:true,
-      laziness:0.5,
+      laziness:0.2,
       speed:0.1,
       image_url:'',
-      creator:'0x',
-      description:'A walker',
+      creator:'unknown',
+      description:'A Skybud',
     }
     
     collisionRayCasters = [new Raycaster(),new Raycaster()]
     collisionMesh: Mesh 
+
+    hatWearables: Record<string,WearableHat>|null = null
 
     static collisionMaterial = new MeshStandardMaterial({ color: 0xff0000,visible:false, transparent: true, opacity: 0.5 });
 
@@ -135,12 +142,15 @@ export class Walker {
 
     static animationManager:AnimationManager = new AnimationManager()
 
+    rngInterval:NodeJS.Timeout|null = null
+    private _sittingRNG = 0.5
+
     constructor(public world:World,props:walkerParams){
         this.id = Walker.walkers.length
         this.object = props.cube
         this.mesh = props.mesh
         this.direction = props.direction
-        this.speed = props.speed
+        this.walkerInfo = props.walkerMeta
         this.boundingBox = props.boundingBox
 
         this.raycaster.far=2
@@ -176,12 +186,53 @@ export class Walker {
         this.collisionMesh.updateMatrix()
 
         Walker.animationManager.addCharacter(this, this.currentState,{speed:this.speed})
+
+        // const randomHat = Math.floor(Math.random() * hatNames.length)
+        // this.hatWearables = {
+        //   [hatNames[randomHat]]:new WearableHat(this.scene,this,hatNames[randomHat])
+        // }
+
+        this.rngInterval = setInterval(() => {
+          const stdVariation = 0.15 + this.walkerInfo.laziness*0.2
+          this._sittingRNG = gaussianRandom(0.5,stdVariation)
+        }, 2000);
+    }
+
+    get isMinted(){
+      return this.walkerInfo.tokenId > 0
+    }
+
+    get speed(){
+      return this.walkerInfo.speed
+    }
+
+    static hideAllWalkers(except:Walker[]){
+      Walker.walkers.forEach(walker => {
+        if(except.includes(walker)) return
+        walker.object.visible = false
+      })
+    }
+
+    static showAllWalkers(){
+      Walker.walkers.forEach(walker => {
+        walker.object.visible = true
+      })
+    }
+
+    
+    updateSpeed(speed:number){
+      this.walkerInfo.speed = speed
+      Walker.animationManager.updateSpeed(this,speed)
     }
 
     static focusedWalker:Walker|null = null
     static async pickFromMouseClick(mouseX: number, mouseY: number){
       mouse.x= mouseX
       mouse.y= mouseY
+
+      // Check if a walker is already focused
+      if(this.focusedWalker) return
+
       const camera = World.instance.camera as PerspectiveCamera
       Walker.clickRayCast.setFromCamera(mouse, camera)
       const intersects = Walker.clickRayCast.intersectObjects(Walker.walkers.map(walker => walker.collisionMesh),false)
@@ -321,6 +372,7 @@ export class Walker {
           return
         }
 
+        if(this.paused) return
         const oldPosition = this.object.position.clone()
         // Calculate new position based on direction and speed
         const newPosition = this.object.position.clone().add(
@@ -450,11 +502,13 @@ export class Walker {
           if (num < 0.005) {
             this.changeWalkerDirection();
           }
-          num = gaussianRandom(0.5,0.15)
-
-          if (num < 0.005) {
+          
+          // Take into account laziness modifier (which is a value between 0 and 1)
+          if (this._sittingRNG < 0.1) {
+            this._sittingRNG = 1 // avoid too many repetitions
             if(this.currentState == CharacterState.WALKING){
-              this.addStateToQueue(CharacterState.SITTING,{duration:10,loop:false})
+              const duration = 5
+              this.addStateToQueue(CharacterState.SITTING,{duration:duration,loop:false})
             }
           }
 
@@ -463,6 +517,14 @@ export class Walker {
 
     hasState(state:CharacterState){
         return this.stateQueue.some(item => item.state === state)
+    }
+
+    forceUpdateWearables(){
+      if(this.hatWearables && Object.keys(this.hatWearables).length>0){
+        for(const key in this.hatWearables){
+          this.hatWearables[key].update()
+        }
+      }
     }
 
     stateQueue:{state:CharacterState,duration?:number,loop?:boolean}[] = []
@@ -573,10 +635,19 @@ export class Walker {
     }
 
     remove(){
+        if(this.hatWearables && Object.keys(this.hatWearables).length>0){
+          for(const key in this.hatWearables){
+            WearableHat.dispose(this.hatWearables[key])
+            delete this.hatWearables[key]
+          }
+        }
+
+        Walker.animationManager.removeCharacter(this)
         this.collisionMesh.removeFromParent()
         this.collisionMesh.geometry.dispose()
         this.collisionMesh.material=null!
-        this.world.island.remove(this.object)
+        this.object.removeFromParent()
+        this.scene.remove(this.object)
         this.boundingBox = null
         this.object = null!
         this.raycaster =null!
@@ -589,10 +660,22 @@ export class Walker {
         }
     }
 
-    static create(world:World,position?:Vector3,focus?:boolean) {
+    static create(world:World,position?:Vector3,meta?:WalkerMetaInfo ,focus?:boolean) {
+
+        const walkerMeta:WalkerMetaInfo = meta|| {
+          name:'Skybud #000',
+          color:Math.random() * 0xffffff,
+          tokenId:0,
+          talkative:true,
+          laziness:0.2,
+          speed:parseFloat((0.1 + Math.random() * 0.3).toFixed(2)),
+          image_url:'',
+          creator:'unknown',
+          description:'A Skybud',
+      }
 
         const material = new MeshStandardMaterial({
-          color: Math.random() * 0xffffff,
+          color: walkerMeta.color,
         });
 
         const newParent = SkeletonUtils.clone(Walker.rootCharacter)
@@ -604,11 +687,12 @@ export class Walker {
                 child.name=newMeshName
                 child.frustumCulled = false
                 child.castShadow = true;
-                child.receiveShadow = true;
+                child.receiveShadow = false;
             }
         })
 
         const mesh = newParent.getObjectByName(newMeshName) as SkinnedMesh
+
         mesh.material=material
         mesh.castShadow = true;
 
@@ -632,7 +716,7 @@ export class Walker {
             cube: newParent,
             mesh: mesh,
             direction,
-            speed: 0.1 + Math.random() * 0.3,
+            walkerMeta:walkerMeta,
             boundingBox: bb,
         };
 
@@ -640,15 +724,3 @@ export class Walker {
         world.scene.add(newParent);
     }
 }
-
-class SpeechBubbleGenerator{
-
-  constructor(public world:World,public walker:Walker){
-    this.world = world
-    this.walker = walker
-  
-  }
-
-
-}
-

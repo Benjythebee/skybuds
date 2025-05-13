@@ -1,6 +1,7 @@
 import { darkTheme, getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import {
     base,
+    baseSepolia
   } from 'wagmi/chains';
   import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import { WagmiProvider } from "wagmi";
@@ -8,7 +9,7 @@ import { WagmiProvider } from "wagmi";
 const config = getDefaultConfig({
     appName: 'SkyBuds',
     projectId: import.meta.env.VITE_PROJECT_ID||'',
-    chains: [base],
+    chains: [base,baseSepolia],
     ssr: false, // If your dApp uses server side rendering (SSR)
   });
 

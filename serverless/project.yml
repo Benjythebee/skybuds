@@ -1,0 +1,9 @@
+packages:
+  - name: skybuds
+    environment: {}
+    parameters: {}
+    actions:
+      - name: get_nfts
+        runtime: 'go:default'
+        environment:
+          ALCHEMY_KEY: "${ALCHEMY_KEY}"

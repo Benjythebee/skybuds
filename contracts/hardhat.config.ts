@@ -4,6 +4,12 @@ import "@nomicfoundation/hardhat-toolbox";
 
 const config: HardhatUserConfig = {
     defaultNetwork: "sepolia",
+    etherscan:{
+      apiKey: process.env.ETHERSCAN_API_KEY,
+    },
+    sourcify: {
+      enabled: true
+    },
     networks: {
       hardhat: {
       },
@@ -36,8 +42,9 @@ const config: HardhatUserConfig = {
       settings: {
         optimizer: {
           enabled: true,
-          runs: 200
-        }
+          runs: 100
+        },
+        viaIR: true,
       }
     },
     paths: {

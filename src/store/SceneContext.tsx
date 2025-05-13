@@ -4,11 +4,12 @@ import * as THREE from 'three'
 import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { CONSTANTS, sceneInitializer } from '../lib/sceneInitiliazer'
 import { World } from 'lib/World'
+import { ScreenshotManager } from 'lib/screenshotManager'
 
 export type SceneContextType = {
 	world: World
 	scene: THREE.Scene
-
+	screenshotManager: ScreenshotManager
 	camera: THREE.Camera
 	dispose: () => void
 	moveCamera: (value: {
@@ -27,6 +28,7 @@ export const SceneContext = createContext({
 	init: null,
 	scene: null!,
 	camera: null!,
+	screenshotManager: null!,
 	dispose: () => {},
 	moveCamera: (_value: {
 		// left half center
@@ -46,14 +48,12 @@ export const SceneProvider = ({ children }: { children?: React.ReactNode }) => {
 	const [scene, setScene] = useState<THREE.Scene>(null!)
 	const [camera, setCamera] = useState<THREE.Camera>(null!)
 	const [controls, setControls] = useState<OrbitControls>(null!)
-
+	const [screenshotManager, setScreenshotManager] = useState<ScreenshotManager>(null!)
 	let loaded = false
-	const [_isLoaded, setIsLoaded] = useState(false)
 
 	React.useEffect(() => {
 			if (scene && scene.visible) return
-			if (loaded || _isLoaded) return
-			setIsLoaded(true)
+			if (loaded) return
 			loaded = true
 			console.log('init scene')
 			const {
@@ -66,9 +66,25 @@ export const SceneProvider = ({ children }: { children?: React.ReactNode }) => {
 			setCamera(camera_)
 			setScene(scene_)
 			setControls(controls_)
+			setScreenshotManager(new ScreenshotManager(scene_))
 			setSceneElements(sceneElements_)
 			setWorld(world_)
-			
+		
+		return () => {
+			loaded = false
+			if (scene_) {
+				scene_.clear()
+				scene_.visible = false
+			}
+			if (camera_) {
+				camera_.clear()
+				camera_.visible = false
+			}
+			if (controls_) {
+				controls_.dispose()
+			}
+
+		}
 	},[])
 
     const moveCamera = (value:{
@@ -130,6 +146,7 @@ export const SceneProvider = ({ children }: { children?: React.ReactNode }) => {
 			value={{
 				world,
 				scene,
+				screenshotManager,
 				camera,
 				moveCamera,
 				dispose,

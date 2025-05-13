@@ -69,6 +69,17 @@ export class AnimationManager {
           });
     }
 
+    updateSpeed(walker: Walker, speed: number) {
+        const instance = this.characterDataMap.get(walker);
+        if (!instance) {
+          console.warn(`Instance ${walker.id} not found`);
+          return;
+        }
+        instance.actions.forEach((action) => {
+            action.setEffectiveTimeScale(speed*2.8);
+        });
+    }
+
     addCharacter(walker: Walker,initialState: CharacterState | null = null, options?:{speed?:number}) {
         const mixer = new AnimationMixer(walker.mesh);
         const actions = new Map<CharacterState, AnimationAction>();
@@ -101,6 +112,72 @@ export class AnimationManager {
 
         this.characterDataMap.set(walker, { mixer, actions, currentAction });
     }
+
+    removeCharacter(walker: Walker) {
+        const instance = this.characterDataMap.get(walker);
+        if (!instance) {
+          console.warn(`Instance ${walker.id} not found`);
+          return;
+        }
+        // Stop all actions
+        instance.actions.forEach((action) => {
+          action.stop();
+        });
+        // Remove the character from the map
+        this.characterDataMap.delete(walker);
+    }
+
+    _tempAnimData:{
+      prevState: CharacterState | null;
+    } = {prevState:null};
+    pauseAnimationAtFrame(walker: Walker, state: CharacterState, frame: number) {
+        const instance = this.characterDataMap.get(walker);
+        if (!instance) {
+          console.warn(`Instance ${walker.id} not found`);
+          return;
+        }
+        const nextAction = instance.actions.get(state);
+        if (!nextAction) {
+          console.warn(`Animation state ${state} not found for instance ${walker.id}`);
+          return;
+        }
+
+        const currentAction = instance.currentAction;
+        if(currentAction) {
+          currentAction.setEffectiveTimeScale(0);
+          currentAction.setEffectiveWeight(0);
+        }
+
+        this._tempAnimData.prevState = walker.currentState
+        walker.currentState = state;
+        instance.currentAction = nextAction;
+        nextAction.reset();
+        nextAction.setEffectiveTimeScale(1);
+        nextAction.setEffectiveWeight(1);
+        nextAction.play();
+        nextAction.time =frame; // Adjust time based on frame
+        nextAction.timeScale = 0; // Pause the animation
+    }
+
+    continueAnimation(walker: Walker) {
+      if(!this._tempAnimData.prevState) return;
+        const instance = this.characterDataMap.get(walker);
+        if(!instance) {
+          return
+        }
+        const currentAction = instance.currentAction;
+
+        if(currentAction) {
+          currentAction.setEffectiveTimeScale(0);
+          currentAction.setEffectiveWeight(0);
+        }
+
+        // Re-apply the previous state
+        walker.currentState = this._tempAnimData.prevState;
+        this.setCharacterState(walker, this._tempAnimData.prevState, 0.01);
+        this._tempAnimData.prevState = null;
+    }
+
 
     getAnimationDuration(Characterstate:CharacterState): number {
         const anim = this.animations.get(Characterstate);
@@ -142,10 +219,5 @@ export class AnimationManager {
         
       }
 
-      // update(deltaTime: number): void {
-      //   this.characterDataMap.forEach((instance) => {
-      //     instance.mixer.update(deltaTime);
-      //   });
-      // }
 
 }

@@ -26,11 +26,12 @@ import type {
 export interface SkyBudsInterface extends Interface {
   getFunction(
     nameOrSignature:
+      | "MAX_TOKENS"
       | "approve"
       | "balanceOf"
+      | "contractSkybudsMetadata"
       | "getApproved"
       | "isApprovedForAll"
-      | "isNameTaken"
       | "mint"
       | "name"
       | "owner"
@@ -39,24 +40,30 @@ export interface SkyBudsInterface extends Interface {
       | "safeTransferFrom(address,address,uint256)"
       | "safeTransferFrom(address,address,uint256,bytes)"
       | "setApprovalForAll"
+      | "setMetadataContractAddress"
       | "supportsInterface"
       | "symbol"
       | "tokenURI"
       | "totalSupply"
       | "transferFrom"
       | "transferOwnership"
+      | "updateBase64Uri"
+      | "updateMetadata"
+      | "updateWearables"
   ): FunctionFragment;
 
   getEvent(
     nameOrSignatureOrTopic:
       | "Approval"
       | "ApprovalForAll"
-      | "BatchMetadataUpdate"
-      | "MetadataUpdate"
       | "OwnershipTransferred"
       | "Transfer"
   ): EventFragment;
 
+  encodeFunctionData(
+    functionFragment: "MAX_TOKENS",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "approve",
     values: [AddressLike, BigNumberish]
@@ -66,6 +73,10 @@ export interface SkyBudsInterface extends Interface {
     values: [AddressLike]
   ): string;
   encodeFunctionData(
+    functionFragment: "contractSkybudsMetadata",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "getApproved",
     values: [BigNumberish]
   ): string;
@@ -73,10 +84,16 @@ export interface SkyBudsInterface extends Interface {
     functionFragment: "isApprovedForAll",
     values: [AddressLike, AddressLike]
   ): string;
-  encodeFunctionData(functionFragment: "isNameTaken", values: [string]): string;
   encodeFunctionData(
     functionFragment: "mint",
-    values: [string, string]
+    values: [
+      BigNumberish[],
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      string,
+      string
+    ]
   ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(functionFragment: "owner", values?: undefined): string;
@@ -101,6 +118,10 @@ export interface SkyBudsInterface extends Interface {
     values: [AddressLike, boolean]
   ): string;
   encodeFunctionData(
+    functionFragment: "setMetadataContractAddress",
+    values: [AddressLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
   ): string;
@@ -121,19 +142,40 @@ export interface SkyBudsInterface extends Interface {
     functionFragment: "transferOwnership",
     values: [AddressLike]
   ): string;
+  encodeFunctionData(
+    functionFragment: "updateBase64Uri",
+    values: [BigNumberish, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateMetadata",
+    values: [
+      BigNumberish,
+      BigNumberish[],
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      string,
+      string
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "updateWearables",
+    values: [BigNumberish, BigNumberish[]]
+  ): string;
 
+  decodeFunctionResult(functionFragment: "MAX_TOKENS", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "contractSkybudsMetadata",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
     functionFragment: "isApprovedForAll",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "isNameTaken",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
@@ -157,6 +199,10 @@ export interface SkyBudsInterface extends Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "setMetadataContractAddress",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
@@ -172,6 +218,18 @@ export interface SkyBudsInterface extends Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "transferOwnership",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateBase64Uri",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateMetadata",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateWearables",
     data: BytesLike
   ): Result;
 }
@@ -209,34 +267,6 @@ export namespace ApprovalForAllEvent {
     owner: string;
     operator: string;
     approved: boolean;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace BatchMetadataUpdateEvent {
-  export type InputTuple = [
-    _fromTokenId: BigNumberish,
-    _toTokenId: BigNumberish
-  ];
-  export type OutputTuple = [_fromTokenId: bigint, _toTokenId: bigint];
-  export interface OutputObject {
-    _fromTokenId: bigint;
-    _toTokenId: bigint;
-  }
-  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
-  export type Filter = TypedDeferredTopicFilter<Event>;
-  export type Log = TypedEventLog<Event>;
-  export type LogDescription = TypedLogDescription<Event>;
-}
-
-export namespace MetadataUpdateEvent {
-  export type InputTuple = [_tokenId: BigNumberish];
-  export type OutputTuple = [_tokenId: bigint];
-  export interface OutputObject {
-    _tokenId: bigint;
   }
   export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
   export type Filter = TypedDeferredTopicFilter<Event>;
@@ -318,6 +348,8 @@ export interface SkyBuds extends BaseContract {
     event?: TCEvent
   ): Promise<this>;
 
+  MAX_TOKENS: TypedContractMethod<[], [bigint], "view">;
+
   approve: TypedContractMethod<
     [to: AddressLike, tokenId: BigNumberish],
     [void],
@@ -325,6 +357,8 @@ export interface SkyBuds extends BaseContract {
   >;
 
   balanceOf: TypedContractMethod<[owner: AddressLike], [bigint], "view">;
+
+  contractSkybudsMetadata: TypedContractMethod<[], [string], "view">;
 
   getApproved: TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
 
@@ -334,10 +368,15 @@ export interface SkyBuds extends BaseContract {
     "view"
   >;
 
-  isNameTaken: TypedContractMethod<[name: string], [boolean], "view">;
-
   mint: TypedContractMethod<
-    [name: string, metadataURI: string],
+    [
+      wearables: BigNumberish[],
+      laziness: BigNumberish,
+      speed: BigNumberish,
+      isTalkative: BigNumberish,
+      color: string,
+      base64uri: string
+    ],
     [bigint],
     "nonpayable"
   >;
@@ -373,6 +412,12 @@ export interface SkyBuds extends BaseContract {
     "nonpayable"
   >;
 
+  setMetadataContractAddress: TypedContractMethod<
+    [_addressContractMetadata: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+
   supportsInterface: TypedContractMethod<
     [interfaceId: BytesLike],
     [boolean],
@@ -397,10 +442,39 @@ export interface SkyBuds extends BaseContract {
     "nonpayable"
   >;
 
+  updateBase64Uri: TypedContractMethod<
+    [tokenId: BigNumberish, base64Uri: string],
+    [void],
+    "nonpayable"
+  >;
+
+  updateMetadata: TypedContractMethod<
+    [
+      tokenId: BigNumberish,
+      wearables: BigNumberish[],
+      laziness: BigNumberish,
+      speed: BigNumberish,
+      isTalkative: BigNumberish,
+      color: string,
+      base64uri: string
+    ],
+    [void],
+    "nonpayable"
+  >;
+
+  updateWearables: TypedContractMethod<
+    [tokenId: BigNumberish, wearableIds: BigNumberish[]],
+    [void],
+    "nonpayable"
+  >;
+
   getFunction<T extends ContractMethod = ContractMethod>(
     key: string | FunctionFragment
   ): T;
 
+  getFunction(
+    nameOrSignature: "MAX_TOKENS"
+  ): TypedContractMethod<[], [bigint], "view">;
   getFunction(
     nameOrSignature: "approve"
   ): TypedContractMethod<
@@ -412,6 +486,9 @@ export interface SkyBuds extends BaseContract {
     nameOrSignature: "balanceOf"
   ): TypedContractMethod<[owner: AddressLike], [bigint], "view">;
   getFunction(
+    nameOrSignature: "contractSkybudsMetadata"
+  ): TypedContractMethod<[], [string], "view">;
+  getFunction(
     nameOrSignature: "getApproved"
   ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
   getFunction(
@@ -422,12 +499,16 @@ export interface SkyBuds extends BaseContract {
     "view"
   >;
   getFunction(
-    nameOrSignature: "isNameTaken"
-  ): TypedContractMethod<[name: string], [boolean], "view">;
-  getFunction(
     nameOrSignature: "mint"
   ): TypedContractMethod<
-    [name: string, metadataURI: string],
+    [
+      wearables: BigNumberish[],
+      laziness: BigNumberish,
+      speed: BigNumberish,
+      isTalkative: BigNumberish,
+      color: string,
+      base64uri: string
+    ],
     [bigint],
     "nonpayable"
   >;
@@ -470,6 +551,13 @@ export interface SkyBuds extends BaseContract {
     "nonpayable"
   >;
   getFunction(
+    nameOrSignature: "setMetadataContractAddress"
+  ): TypedContractMethod<
+    [_addressContractMetadata: AddressLike],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
     nameOrSignature: "supportsInterface"
   ): TypedContractMethod<[interfaceId: BytesLike], [boolean], "view">;
   getFunction(
@@ -491,6 +579,35 @@ export interface SkyBuds extends BaseContract {
   getFunction(
     nameOrSignature: "transferOwnership"
   ): TypedContractMethod<[newOwner: AddressLike], [void], "nonpayable">;
+  getFunction(
+    nameOrSignature: "updateBase64Uri"
+  ): TypedContractMethod<
+    [tokenId: BigNumberish, base64Uri: string],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "updateMetadata"
+  ): TypedContractMethod<
+    [
+      tokenId: BigNumberish,
+      wearables: BigNumberish[],
+      laziness: BigNumberish,
+      speed: BigNumberish,
+      isTalkative: BigNumberish,
+      color: string,
+      base64uri: string
+    ],
+    [void],
+    "nonpayable"
+  >;
+  getFunction(
+    nameOrSignature: "updateWearables"
+  ): TypedContractMethod<
+    [tokenId: BigNumberish, wearableIds: BigNumberish[]],
+    [void],
+    "nonpayable"
+  >;
 
   getEvent(
     key: "Approval"
@@ -505,20 +622,6 @@ export interface SkyBuds extends BaseContract {
     ApprovalForAllEvent.InputTuple,
     ApprovalForAllEvent.OutputTuple,
     ApprovalForAllEvent.OutputObject
-  >;
-  getEvent(
-    key: "BatchMetadataUpdate"
-  ): TypedContractEvent<
-    BatchMetadataUpdateEvent.InputTuple,
-    BatchMetadataUpdateEvent.OutputTuple,
-    BatchMetadataUpdateEvent.OutputObject
-  >;
-  getEvent(
-    key: "MetadataUpdate"
-  ): TypedContractEvent<
-    MetadataUpdateEvent.InputTuple,
-    MetadataUpdateEvent.OutputTuple,
-    MetadataUpdateEvent.OutputObject
   >;
   getEvent(
     key: "OwnershipTransferred"
@@ -556,28 +659,6 @@ export interface SkyBuds extends BaseContract {
       ApprovalForAllEvent.InputTuple,
       ApprovalForAllEvent.OutputTuple,
       ApprovalForAllEvent.OutputObject
-    >;
-
-    "BatchMetadataUpdate(uint256,uint256)": TypedContractEvent<
-      BatchMetadataUpdateEvent.InputTuple,
-      BatchMetadataUpdateEvent.OutputTuple,
-      BatchMetadataUpdateEvent.OutputObject
-    >;
-    BatchMetadataUpdate: TypedContractEvent<
-      BatchMetadataUpdateEvent.InputTuple,
-      BatchMetadataUpdateEvent.OutputTuple,
-      BatchMetadataUpdateEvent.OutputObject
-    >;
-
-    "MetadataUpdate(uint256)": TypedContractEvent<
-      MetadataUpdateEvent.InputTuple,
-      MetadataUpdateEvent.OutputTuple,
-      MetadataUpdateEvent.OutputObject
-    >;
-    MetadataUpdate: TypedContractEvent<
-      MetadataUpdateEvent.InputTuple,
-      MetadataUpdateEvent.OutputTuple,
-      MetadataUpdateEvent.OutputObject
     >;
 
     "OwnershipTransferred(address,address)": TypedContractEvent<

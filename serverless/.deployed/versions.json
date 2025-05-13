@@ -1,0 +1,13 @@
+[
+  {
+    "apihost": "https://faas-sfo3-7872a1dd.doserverless.co",
+    "namespace": "fn-e3654022-a1de-4e38-8803-0192db058ebe",
+    "packageVersions": {},
+    "actionVersions": {
+      "skybuds/get_nfts": {
+        "digest": "bd438af7983adf11f92ddb948626fee385ae877b7241cc942277b39d407f5282",
+        "version": "0.0.16"
+      }
+    }
+  }
+]

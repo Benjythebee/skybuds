@@ -6,6 +6,8 @@ import React from "react";
 import { Loader } from "./loader";
 import { Web3Provider } from "lib/web3/provider";
 import { Overlay } from "./menu/Overlay";
+import { LoadedSkyBuds } from "components/loadedSkybuds";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 
 export const App = () => {
@@ -16,6 +18,10 @@ export const App = () => {
         
         guiContainer.appendChild(gui.domElement);
     },[ref.current]);
+
+    const queryClient = React.useMemo(() => {
+        return new QueryClient()
+    },[])
     return (
         <div className="w-full h-full relative">
             <SceneProvider>
@@ -23,8 +29,11 @@ export const App = () => {
                 <Scene />
                 <Web3Provider>
                     <RightMenu />
+                    <Overlay />
                 </Web3Provider>
-                <Overlay />
+                <QueryClientProvider client={queryClient}>
+                    <LoadedSkyBuds />
+                </QueryClientProvider>
                 <div className="absolute z-10 top-8 left-2">
                     <div  ref={ref} id="gui_container" />
                 </div>

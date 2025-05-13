@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { World } from './World'
 import { Walker } from './Walker'
+import { WearableHat } from './wearables/Wearable'
 
 export const CONSTANTS= {
 	maxDistance: 40,
@@ -126,6 +127,7 @@ export function sceneInitializer(
 		controls?.update()
 		world.update(delta)
 		Walker.updateWalkers(delta,frustrum)
+		WearableHat.updateAll()
 		renderer.render(scene, camera)
 		stats && stats.end()
 	}
