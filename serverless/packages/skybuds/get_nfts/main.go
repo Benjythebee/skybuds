@@ -70,10 +70,10 @@ func Main(ctx context.Context, event Event) Response {
 	var url string
 	if chain != "testnet" {
 		// chain == "base"
-		url = fmt.Sprintf("https://base-mainnet.g.alchemy.com/nft/v3/%s/getNFTsForContract?contractAddress=0x216324D5812639a11c2d12d533FB2F44B9b552BA&withMetadata=true", apiKey)
+		url = fmt.Sprintf("https://base-mainnet.g.alchemy.com/nft/v3/%s/getNFTsForContract?contractAddress=0x09d48fc5625c52C261b567724B160D562BC584CF&withMetadata=true", apiKey)
 	} else {
 		// chain == "testnet"
-		url = fmt.Sprintf("https://base-sepolia.g.alchemy.com/nft/v3/%s/getNFTsForContract?contractAddress=0x216324D5812639a11c2d12d533FB2F44B9b552BA&withMetadata=true", apiKey)
+		url = fmt.Sprintf("https://base-sepolia.g.alchemy.com/nft/v3/%s/getNFTsForContract?contractAddress=0x09d48fc5625c52C261b567724B160D562BC584CF&withMetadata=true", apiKey)
 	}
 
 	// Fetch data from Alchemy

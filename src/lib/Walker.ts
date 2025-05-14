@@ -719,8 +719,9 @@ export class Walker {
             walkerMeta:walkerMeta,
             boundingBox: bb,
         };
-
-        this.walkers.push(new Walker(world,walker));
+        const walkerInstance = new Walker(world,walker);
+        this.walkers.push(walkerInstance);
         world.scene.add(newParent);
+        return walkerInstance
     }
 }

@@ -5,8 +5,8 @@
     "packageVersions": {},
     "actionVersions": {
       "skybuds/get_nfts": {
-        "digest": "bd438af7983adf11f92ddb948626fee385ae877b7241cc942277b39d407f5282",
-        "version": "0.0.16"
+        "digest": "5dd1c22002d04bae50117d04efa041cee05589bad5854842015dae6e19bbdb77",
+        "version": "0.0.17"
       }
     }
   }

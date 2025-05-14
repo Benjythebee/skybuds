@@ -51,7 +51,33 @@ contract SkyBudsMetadata is MetadataEncoding,Ownable {
         emit MetadataUpdated(tokenId, encodedMetadata, base64Uri);
     }
     
-    
+    /**
+    * Converts an array of wearable IDs to a JSON array string
+    * @param wearableIds Array of wearable IDs
+    * @return JSON array as string (e.g., "[42,123,456]")
+    */
+    function stringifyWearableIds(uint256[] memory wearableIds) internal pure returns (string memory) {
+        // Handle empty array
+        if (wearableIds.length == 0) {
+            return "[]";
+        }
+        
+        // Start with opening bracket
+        string memory result = "[";
+        
+        // Add first element without preceding comma
+        result = string(abi.encodePacked(result, uint2str(wearableIds[0])));
+        
+        // Add remaining elements with commas
+        for (uint256 i = 1; i < wearableIds.length; i++) {
+            result = string(abi.encodePacked(result, ",", uint2str(wearableIds[i])));
+        }
+        
+        // Add closing bracket
+        result = string(abi.encodePacked(result, "]"));
+        
+        return result;
+    }
     // Generate JSON metadata for a token
     function generateTokenURI(uint256 tokenId) public view tokenExists(tokenId) returns (string memory) {
         SkyBudData storage data = _tokenMetadata[tokenId];
@@ -61,6 +87,8 @@ contract SkyBudsMetadata is MetadataEncoding,Ownable {
         string memory speedValue = uint2str(getSpeed(tokenId));
         string memory lazinessValue = uint2str(getLaziness(tokenId));
         string memory colorValue = getColorFormatted(data.encodedMetadata);
+        uint256[] memory wearableIds = getWearables(data.encodedMetadata);
+        string memory wearableIdsJson = stringifyWearableIds(wearableIds);
         
         // Convert tokenId to string
         string memory tokenIdString = uint2str(tokenId);
@@ -70,7 +98,8 @@ contract SkyBudsMetadata is MetadataEncoding,Ownable {
             '{"trait_type":"Talkative","value":', isTalkative_ ? 'true' : 'false', '},',
             '{"trait_type":"Speed","value":', speedValue, '},',
             '{"trait_type":"Laziness","value":', lazinessValue, '},',
-            '{"trait_type":"Color","value":"', colorValue, '"}'
+            '{"trait_type":"Color","value":"', colorValue, '"},',
+            '{"trait_type":"Wearables","value":', wearableIdsJson, '}'
         ));
 
         // Build the JSON string using abi.encodePacked

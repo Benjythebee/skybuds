@@ -84,6 +84,9 @@ export type SkyBudAttributes = {
 }|{
   trait_type: "Color",
   value: string
+}|{
+  trait_type: "Wearables",
+  value: number[]
 }
 
 export type SkyBudMetadata = {

@@ -194,7 +194,8 @@ skyBuds.updateWearables(2,[1,2,3])
             { trait_type: "Talkative", value: mockMetadata.isTalkative },
             { trait_type: "Laziness", value: mockMetadata.laziness },
             { trait_type: "Speed", value: mockMetadata.speed },
-            { trait_type: "Color", value: mockMetadata.color }
+            { trait_type: "Color", value: mockMetadata.color },
+            { trait_type: "Wearables", value: mockMetadata.wearables },
           ],
         }
       
@@ -217,9 +218,15 @@ skyBuds.updateWearables(2,[1,2,3])
       const color = parsed.attributes.find(
         (attr:any) => attr.trait_type === "Color"
       );
+      const wearables = parsed.attributes.find(
+        (attr:any) => attr.trait_type === "Wearables"
+      );
       expect(talkative.value).to.equal(mockMetadata.isTalkative?true:false);
       expect(laziness.value).to.equal(mockMetadata.laziness);
       expect(speed.value).to.equal(mockMetadata.speed);
+      for (let i = 0; i < mockMetadata.wearables.length; i++) {
+        expect(mockMetadata.wearables.includes(wearables.value[i])).to.equal(true);
+      }
       expect(color.value.toLowerCase()).to.equal(mockMetadata.color.toLowerCase());
       
     });

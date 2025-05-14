@@ -37,6 +37,7 @@ export interface SkyBudsMetadataInterface extends Interface {
       | "getMetadata"
       | "getSpeed"
       | "getSpeedFormatted"
+      | "getWearables"
       | "hasWearable"
       | "hexStringToUint"
       | "isTalkative"
@@ -96,6 +97,10 @@ export interface SkyBudsMetadataInterface extends Interface {
   ): string;
   encodeFunctionData(
     functionFragment: "getSpeedFormatted",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getWearables",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -187,6 +192,10 @@ export interface SkyBudsMetadataInterface extends Interface {
   decodeFunctionResult(functionFragment: "getSpeed", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getSpeedFormatted",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getWearables",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -378,6 +387,12 @@ export interface SkyBudsMetadata extends BaseContract {
     "view"
   >;
 
+  getWearables: TypedContractMethod<
+    [metadata: BigNumberish],
+    [bigint[]],
+    "view"
+  >;
+
   hasWearable: TypedContractMethod<
     [tokenId: BigNumberish, wearableId: BigNumberish],
     [boolean],
@@ -495,6 +510,9 @@ export interface SkyBudsMetadata extends BaseContract {
   getFunction(
     nameOrSignature: "getSpeedFormatted"
   ): TypedContractMethod<[tokenId: BigNumberish], [string], "view">;
+  getFunction(
+    nameOrSignature: "getWearables"
+  ): TypedContractMethod<[metadata: BigNumberish], [bigint[]], "view">;
   getFunction(
     nameOrSignature: "hasWearable"
   ): TypedContractMethod<

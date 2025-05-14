@@ -247,4 +247,30 @@ contract MetadataEncoding {
         uint256 colorValue = getColor(metadata);
         return uintToHexString(colorValue);
     }
+    /**
+    * Get all non-zero wearable IDs from metadata
+    * @param metadata The encoded metadata
+    * @return Array of non-zero wearable IDs
+    */
+    function getWearables(uint256 metadata) public pure returns (uint256[] memory) {
+        uint256 count = 0;
+        uint256[] memory allWearables = new uint256[](MAX_WEARABLES);
+        
+        // First pass: count non-zero wearables and populate temporary array
+        for (uint256 i = 0; i < MAX_WEARABLES; i++) {
+            uint256 id = (metadata >> (POSITION_WEARABLES + i * BITS_PER_WEARABLE)) & MASK_WEARABLE;
+            if (id > 0) {
+                allWearables[count] = id;
+                count++;
+            }
+        }
+        
+        // Second pass: create correctly sized array and copy values
+        uint256[] memory result = new uint256[](count);
+        for (uint256 i = 0; i < count; i++) {
+            result[i] = allWearables[i];
+        }
+        
+        return result;
+    }
 }

@@ -22,11 +22,19 @@ import type {
 
 export interface MetadataEncodingInterface extends Interface {
   getFunction(
-    nameOrSignature: "decodeMetadata" | "hexStringToUint" | "uintToHexString"
+    nameOrSignature:
+      | "decodeMetadata"
+      | "getWearables"
+      | "hexStringToUint"
+      | "uintToHexString"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "decodeMetadata",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "getWearables",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -40,6 +48,10 @@ export interface MetadataEncodingInterface extends Interface {
 
   decodeFunctionResult(
     functionFragment: "decodeMetadata",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "getWearables",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -109,6 +121,12 @@ export interface MetadataEncoding extends BaseContract {
     "view"
   >;
 
+  getWearables: TypedContractMethod<
+    [metadata: BigNumberish],
+    [bigint[]],
+    "view"
+  >;
+
   hexStringToUint: TypedContractMethod<[hexString: string], [bigint], "view">;
 
   uintToHexString: TypedContractMethod<[value: BigNumberish], [string], "view">;
@@ -132,6 +150,9 @@ export interface MetadataEncoding extends BaseContract {
     ],
     "view"
   >;
+  getFunction(
+    nameOrSignature: "getWearables"
+  ): TypedContractMethod<[metadata: BigNumberish], [bigint[]], "view">;
   getFunction(
     nameOrSignature: "hexStringToUint"
   ): TypedContractMethod<[hexString: string], [bigint], "view">;

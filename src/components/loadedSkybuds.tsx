@@ -1,4 +1,6 @@
 import { Walker } from "lib/Walker";
+import { ITEMS_LIST } from "lib/wearables/items";
+import { WearableHat } from "lib/wearables/Wearable";
 import React from "react";
 import { useSceneContext } from "store/SceneContext";
 import { useSkybuds } from "web3/useSkybuds"
@@ -19,8 +21,9 @@ export const LoadedSkyBuds = () => {
                 const laziness = (getAttribute<number>(skyBud,'Laziness') || 20) / 100
                 const talkative = getAttribute<boolean>(skyBud,'Talkative') ?? false
                 const color = getAttribute<string>(skyBud,'Color') || '#FF5500'
+                const wearables = getAttribute<number[]>(skyBud,'Wearables') || []
 
-                Walker.create(world,undefined,{
+                const walker = Walker.create(world,undefined,{
                     tokenId: parseInt(skyBud.tokenId),
                     name: skyBud.name,
                     image_url: skyBud.image,
@@ -30,7 +33,17 @@ export const LoadedSkyBuds = () => {
                     speed: speed,
                     laziness: laziness,
                     color: parseInt(color.replace('#','0x'),16),
-                })
+                },false)
+
+                if(!walker.hatWearables){
+                    walker.hatWearables = {}
+                }
+                for(const wearableID of wearables){
+                    const uint = wearableID as keyof typeof ITEMS_LIST
+                    const wearable = ITEMS_LIST[uint]
+                    walker.hatWearables[wearable.category]= new WearableHat(world.scene,walker,uint)
+                }
+
             })
         }
     },[world,data])
