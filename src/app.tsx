@@ -8,14 +8,14 @@ import { Web3Provider } from "lib/web3/provider";
 import { Overlay } from "./menu/Overlay";
 import { LoadedSkyBuds } from "components/loadedSkybuds";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-
+import { isViewMode } from "lib/utils/featureFlags";
 
 export const App = () => {
     const ref = React.useRef<HTMLDivElement>(null);
     React.useEffect(() => {
         if(ref.current === null) return;
         const guiContainer = ref.current
-        
+        if(isViewMode) return
         guiContainer.appendChild(gui.domElement);
     },[ref.current]);
 
@@ -27,10 +27,10 @@ export const App = () => {
             <SceneProvider>
                 <Loader />
                 <Scene />
-                <Web3Provider>
+                {!isViewMode && <Web3Provider>
                     <RightMenu />
                     <Overlay />
-                </Web3Provider>
+                </Web3Provider>}
                 <QueryClientProvider client={queryClient}>
                     <LoadedSkyBuds />
                 </QueryClientProvider>

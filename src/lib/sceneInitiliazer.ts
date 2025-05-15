@@ -5,6 +5,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { World } from './World'
 import { Walker } from './Walker'
 import { WearableHat } from './wearables/Wearable'
+import { isViewMode } from './utils/featureFlags'
 
 export const CONSTANTS= {
 	maxDistance: 40,
@@ -75,10 +76,15 @@ export function sceneInitializer(
 	const controls = new OrbitControls(camera, renderer.domElement)
 	controls.minDistance = CONSTANTS.minDistance
 	controls.maxDistance = CONSTANTS.maxDistance
-	// controls.minPolarAngle = (Math.PI / 2)-0.1
-	// controls.maxPolarAngle = Math.PI 
+    controls.autoRotate = isViewMode
 
-    controls.autoRotate = false
+	if(isViewMode){
+		controls.maxDistance = 30
+		controls.rotateSpeed = 0.5
+		controls.autoRotateSpeed = 0.5
+		controls.maxPolarAngle = (Math.PI / 2)
+	}
+
 	controls.enablePan =true
 
 	controls.enableZoom =true
@@ -123,8 +129,8 @@ export function sceneInitializer(
 			)
 		)
 		const delta = clock.getDelta()
-		// controls.target.clamp(minPan, maxPan)
-		controls?.update()
+
+		controls?.update(delta)
 		world.update(delta)
 		Walker.updateWalkers(delta,frustrum)
 		WearableHat.updateAll()
@@ -141,7 +147,10 @@ export function sceneInitializer(
 		const mousey = -((event.clientY - rect.top) / rect.height) * 2 + 1
 		Walker.pickFromMouseClick(mousex,mousey)
 	}
-	canvasRef.addEventListener('click', handleMouseClick)
+	if(!isViewMode){
+		canvasRef.addEventListener('click', handleMouseClick)
+	}
+
 
 	return {
 		scene,

@@ -1,6 +1,6 @@
-import SkybudsABI from "./SkyBudsABI.json"
+import SkybudsABI from "../web3/SkyBudsABI.json"
 import { useReadContract } from "wagmi"
-import { SkyBudMetadata } from "./utils"
+import { SkyBudMetadata } from "../web3/utils"
 
 export const useSkyBudMetadata = (tokenId:number) => {
 

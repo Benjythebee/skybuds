@@ -7,7 +7,7 @@ import { Color, Vector3 } from 'three'
 import { useWearableOverlayStore, WearablesGrid } from './WearableOverlay'
 import {  usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
 import SkybudsABI from '../web3/SkyBudsABI.json'
-import {  useSkyBudMetadata } from 'web3/useSkyBudMetadata'
+import {  useSkyBudMetadata } from 'hooks/useSkyBudMetadata'
 import { getAttribute } from 'web3/utils'
 
 const skybudsContract = import.meta.env.VITE_DEPLOYED_SKYBUDS || '0x'
