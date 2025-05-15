@@ -1,13 +1,12 @@
 import { ArrowHelper, Box3, BoxGeometry, Group, LoadingManager, Mesh, MeshStandardMaterial, SkinnedMesh, Raycaster, Scene, Object3D, Vector3, Box3Helper, PerspectiveCamera, Frustum, Bone, Vector2 } from "three";
 import { World, worldParameters} from "./World";
-import { FontLoader, GLTFLoader, SkeletonUtils } from "three/examples/jsm/Addons.js";
+import { GLTFLoader, SkeletonUtils } from "three/examples/jsm/Addons.js";
 import { useAudioContext } from "../store/AudioContext";
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { gui } from "./config";
 import { AnimationManager } from "./animationManager";
-import { remove } from "three/examples/jsm/libs/tween.module.js";
 import {EventEmitter} from "events";
 import { WearableHat } from "./wearables/Wearable";
+import { isViewMode } from "./utils/featureFlags";
 
 
 ////// HEEEEEEEERRRRREEEEEEEEEEE https://stackblitz.com/edit/three-ezinstancedmesh2-skinning?file=src%2Fmain.ts
@@ -455,6 +454,7 @@ export class Walker {
             })
 
             if(collisionWithOtherWalker.length>0 ){
+              if(isViewMode) return // in view mode, we dont want to trigger conversations
               if(Math.random() < 0.1){
 
                 let otherWalker:Walker = (collisionWithOtherWalker[0] as any).walker
