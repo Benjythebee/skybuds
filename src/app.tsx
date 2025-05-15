@@ -5,7 +5,7 @@ import { gui } from "./lib/config";
 import React from "react";
 import { Loader } from "./loader";
 import { Web3Provider } from "./lib/web3/provider";
-import { Overlay } from "./menu/Overlay";
+import { Overlay } from "./menu/overlay";
 import { LoadedSkyBuds } from "./components/loadedSkybuds";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { isViewMode } from "./lib/utils/featureFlags";
