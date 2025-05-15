@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "type": "module",
+  "packageManager": "pnpm@9.12.0",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
