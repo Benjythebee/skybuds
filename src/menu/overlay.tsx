@@ -1,14 +1,14 @@
-import ExpandableSliderButton from 'components/ExpandableSlider'
-import { CharacterState, Walker } from 'lib/Walker'
+import ExpandableSliderButton from '../components/ExpandableSlider'
+import { CharacterState, Walker } from '../lib/Walker'
 import { CircleCheck, Shirt, Trash2, X } from 'lucide-react'
 import React, { useCallback } from 'react'
-import { useSceneContext } from 'store/SceneContext'
+import { useSceneContext } from '../store/SceneContext'
 import { Color, Vector3 } from 'three'
 import { useWearableOverlayStore, WearablesGrid } from './WearableOverlay'
 import {  usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
 import SkybudsABI from '../web3/SkyBudsABI.json'
-import {  useSkyBudMetadata } from 'hooks/useSkyBudMetadata'
-import { getAttribute } from 'web3/utils'
+import {  useSkyBudMetadata } from '../hooks/useSkyBudMetadata'
+import { getAttribute } from '../web3/utils'
 
 
 export const Overlay: React.FC<any> = () => {
@@ -77,13 +77,13 @@ export const Overlay: React.FC<any> = () => {
       functionName:'mint',
       args,
     },{
-      onSuccess:(data)=> {
+      onSuccess:(data:any)=> {
         console.log('Minting transaction sent:', data)
       },
-      onError:(error) => {
+      onError:(error:any) => {
         console.error('Error minting:', error)
       },  
-      onSettled:(data) => {
+      onSettled:(data:any) => {
         console.log('Minting transaction settled:', data)
       }
     })

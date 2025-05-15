@@ -1,10 +1,10 @@
-import { Walker } from "lib/Walker";
-import { ITEMS_LIST } from "lib/wearables/items";
-import { WearableHat } from "lib/wearables/Wearable";
+import { Walker } from "../lib/Walker";
+import { ITEMS_LIST } from "../lib/wearables/items";
+import { WearableHat } from "../lib/wearables/Wearable";
 import React from "react";
-import { useSceneContext } from "store/SceneContext";
-import { useSkybuds } from "hooks/useSkybuds"
-import { getAttribute } from "web3/utils";
+import { useSceneContext } from "../store/SceneContext";
+import { useSkybuds } from "../hooks/useSkybuds"
+import { getAttribute } from "../web3/utils";
 
 
 export const LoadedSkyBuds = () => {

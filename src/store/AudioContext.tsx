@@ -1,4 +1,4 @@
-import { Voices } from "lib/voices";
+import { Voices } from "../lib/voices";
 import { create } from "zustand";
 
 

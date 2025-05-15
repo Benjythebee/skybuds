@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Slider } from './Slider';
-import { cn } from 'lib/ui-helpers/cn';
+import { cn } from '../lib/ui-helpers/cn';
 
 interface ExpandableSliderButtonProps {
   onSliderChange?: (value: number) => void;

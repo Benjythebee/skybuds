@@ -1,4 +1,4 @@
-import { VoiceJSONTYPE } from 'voice.type';
+import { VoiceJSONTYPE } from '../voice.type';
 import voiceJson from '../data/voices.json';
 import AudioProcessor from './audioProcessor';
 const typedVoiceJson = voiceJson as VoiceJSONTYPE

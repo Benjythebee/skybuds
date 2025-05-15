@@ -1,9 +1,9 @@
-import { cn } from "lib/ui-helpers/cn"
-import { Walker } from "lib/Walker"
-import { ITEMS_BY_CATEGORY, WearableWithIndex } from "lib/wearables/items"
-import { WearableHat } from "lib/wearables/Wearable"
+import { cn } from "../lib/ui-helpers/cn"
+import { Walker } from "../lib/Walker"
+import { ITEMS_BY_CATEGORY, WearableWithIndex } from "../lib/wearables/items"
+import { WearableHat } from "../lib/wearables/Wearable"
 import React, { useState } from "react"
-import { useSceneContext } from "store/SceneContext"
+import { useSceneContext } from "../store/SceneContext"
 import { create } from "zustand"
 
 

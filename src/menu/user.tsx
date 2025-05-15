@@ -1,4 +1,4 @@
-import { ConnectWalletButton } from "components/connectButton"
+import { ConnectWalletButton } from "../components/connectButton"
 import { PlusCircle } from "lucide-react"
 import { useAccount } from "wagmi"
 import { Tabs } from "./RightMenu"

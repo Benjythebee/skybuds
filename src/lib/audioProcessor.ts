@@ -1,4 +1,4 @@
-import { useAudioContext } from "store/AudioContext";
+import { useAudioContext } from "../store/AudioContext";
 import { gui } from "./config";
 
 /***

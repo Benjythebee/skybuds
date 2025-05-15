@@ -1,7 +1,7 @@
 import { ArrowHelper, Box3, BoxGeometry, Group, LoadingManager, Mesh, MeshStandardMaterial, SkinnedMesh, Raycaster, Scene, Object3D, Vector3, Box3Helper, PerspectiveCamera, Frustum, Bone, Vector2 } from "three";
 import { World, worldParameters} from "./World";
 import { FontLoader, GLTFLoader, SkeletonUtils } from "three/examples/jsm/Addons.js";
-import { useAudioContext } from "store/AudioContext";
+import { useAudioContext } from "../store/AudioContext";
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { gui } from "./config";
 import { AnimationManager } from "./animationManager";

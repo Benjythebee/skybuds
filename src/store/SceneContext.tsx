@@ -3,8 +3,8 @@ import React, { createContext, useCallback,  useEffect,  useState } from 'react'
 import * as THREE from 'three'
 import type { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { CONSTANTS, sceneInitializer } from '../lib/sceneInitiliazer'
-import { World } from 'lib/World'
-import { ScreenshotManager } from 'lib/screenshotManager'
+import { World } from '../lib/World'
+import { ScreenshotManager } from '../lib/screenshotManager'
 
 export type SceneContextType = {
 	world: World

@@ -1,14 +1,14 @@
-import { SceneProvider } from "store/SceneContext";
+import { SceneProvider } from "./store/SceneContext";
 import Scene from "./scene";
-import { RightMenu } from "menu/RightMenu";
-import { gui } from "lib/config";
+import { RightMenu } from "./menu/RightMenu";
+import { gui } from "./lib/config";
 import React from "react";
 import { Loader } from "./loader";
-import { Web3Provider } from "lib/web3/provider";
+import { Web3Provider } from "./lib/web3/provider";
 import { Overlay } from "./menu/Overlay";
-import { LoadedSkyBuds } from "components/loadedSkybuds";
+import { LoadedSkyBuds } from "./components/loadedSkybuds";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { isViewMode } from "lib/utils/featureFlags";
+import { isViewMode } from "./lib/utils/featureFlags";
 
 export const App = () => {
     const ref = React.useRef<HTMLDivElement>(null);

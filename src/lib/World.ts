@@ -1,4 +1,4 @@
-import { useViewContext } from "store/ViewContext";
+import { useViewContext } from "../store/ViewContext";
 import { ArrowHelper, Box3, Box3Helper, Color,  FrontSide,  GridHelper, Group, LoadingManager, Mesh, MeshStandardMaterial, Object3D, PerspectiveCamera, Raycaster, Scene, SpotLight, Vector3} from "three";
 import { GLTFLoader, OrbitControls } from "three/examples/jsm/Addons.js";
 import { gui } from "./config";

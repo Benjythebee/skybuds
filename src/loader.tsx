@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useSceneContext } from "store/SceneContext"
+import { useSceneContext } from "./store/SceneContext"
 
 
 
@@ -14,7 +14,7 @@ export const Loader = () => {
             return
         }
 
-        world.loadManager.onProgress = (item, loaded, total) => {
+        world.loadManager.onProgress = (item:any, loaded:any, total:any) => {
             setProgress(loaded / total)
         }
 
