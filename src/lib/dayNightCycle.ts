@@ -1,4 +1,4 @@
-import {AmbientLight, BackSide, BufferGeometry, Color, DirectionalLight, DirectionalLightHelper, ImageUtils, Mesh, MeshBasicMaterial, MeshStandardMaterial, Object3D, PlaneGeometry, Scene, SphereGeometry, TextureLoader, Vector3} from 'three';
+import {AmbientLight, BackSide, BufferGeometry, Color, DirectionalLight, DirectionalLightHelper, ImageUtils, Mesh, MeshBasicMaterial, MeshStandardMaterial, Object3D, PlaneGeometry, RepeatWrapping, Scene, SphereGeometry, TextureLoader, Vector3} from 'three';
 import { FireFlies } from './utils/fireflies';
 /**
  * DayNightCycle class manages the lighting, sky color and time of day
@@ -9,6 +9,7 @@ class DayNightCycle {
   private moon: DirectionalLight;
   private ambientLight: AmbientLight;
   private skyDome: Mesh<BufferGeometry, MeshBasicMaterial>;
+  private nightSky: Mesh<BufferGeometry, MeshStandardMaterial>;
   private timeOfDay: number = 0.55; // Default to morning (values 0-1)
   private dayDuration: number = 100//300; // Duration of full cycle in seconds
   private autoRotate: boolean = true;
@@ -73,7 +74,24 @@ class DayNightCycle {
       side: BackSide
     });
     this.skyDome = new Mesh(skyGeo, skyMat);
+    
+    const nightSkyGeo = new SphereGeometry(55, 32, 32);
+    const nightSkyMat = new MeshStandardMaterial({
+      side: BackSide,
+      map: this.textureLoader.load('/images/nightsky_color.png'),
+      transparent: true,
+      opacity:0,
+      emissive: '#ffffff',
+      emissiveIntensity:10,
+      emissiveMap: this.textureLoader.load('/images/nightsky_emissive_.jpg')
+    });
+    nightSkyMat.map!.wrapS = nightSkyMat.map!.wrapT = RepeatWrapping;
+    nightSkyMat.map!.repeat.set(3, 3);
+    nightSkyMat.emissiveMap!.wrapS = nightSkyMat.emissiveMap!.wrapT = RepeatWrapping;
+    nightSkyMat.emissiveMap!.repeat.set(3, 3);
+    this.nightSky = new Mesh(nightSkyGeo, nightSkyMat);
     this.scene.add(this.skyDome);
+    this.scene.add(this.nightSky);
 
     const geo = new SphereGeometry( 1.2, 16, 16 )
     this.sunMesh = new Mesh(geo,new MeshBasicMaterial({
@@ -184,6 +202,10 @@ class DayNightCycle {
     return new Vector3((mirror?-1:1)*Math.cos(sunAngle), mirror?-sunHeight:sunHeight, 0).multiplyScalar(30);
   }
 
+  get isDay(): boolean {
+    return this.timeOfDay > 0.25 && this.timeOfDay < 0.75;
+  }
+
   /**
    * Update the cycle based on the current time
    * @param time Value between 0 and 1
@@ -248,6 +270,7 @@ class DayNightCycle {
     
     // Apply sky color
     (this.skyDome.material as MeshBasicMaterial).color = skyColor;
+    this.nightSky.material.opacity = this.isDay?0:moonIntensity+0.1
 
     this.sunMesh!.material.color.set("rgb(255,"+ (Math.floor(Math.sin(sunAngle)*200)+55) + "," + (Math.floor(Math.sin(sunAngle)*200)+5) +")");
     // Adjust ambient light - brighter during day, dimmer at night

@@ -103,7 +103,7 @@ export function sceneInitializer(
 		camera.aspect = window.innerWidth / window.innerHeight
 		camera.updateProjectionMatrix()
 	}
-
+	handleResize()
 	window.addEventListener('resize', handleResize)
 	renderer.setSize(window.innerWidth, window.innerHeight)
 	renderer.setPixelRatio(window.devicePixelRatio)
