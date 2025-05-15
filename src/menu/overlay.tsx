@@ -10,7 +10,6 @@ import SkybudsABI from '../web3/SkyBudsABI.json'
 import {  useSkyBudMetadata } from 'hooks/useSkyBudMetadata'
 import { getAttribute } from 'web3/utils'
 
-const skybudsContract = import.meta.env.VITE_DEPLOYED_SKYBUDS || '0x'
 
 export const Overlay: React.FC<any> = () => {
   const { world, screenshotManager } = useSceneContext()
