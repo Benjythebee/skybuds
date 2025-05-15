@@ -6,9 +6,6 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vitejs.dev/config https://vitest.dev/config
 export default defineConfig({
   plugins: [react(), tailwindcss(), tsconfigPaths()],
-  preview:{
-    port:8080
-  },
     build:{
     target:'esnext',
     rollupOptions:{
