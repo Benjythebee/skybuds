@@ -29,7 +29,7 @@ export const Overlay: React.FC<any> = () => {
 
   const {  data: hash, error, isPending,writeContract } = useWriteContract()
 
-  const {data,isLoading:IsLoadingMintedMetadata} = useSkyBudMetadata(tokenId)
+  // const {data,isLoading:IsLoadingMintedMetadata} = useSkyBudMetadata(tokenId)
 
   const {
     data:txReceipt,
@@ -110,39 +110,39 @@ export const Overlay: React.FC<any> = () => {
       }
   },[isSuccess, txReceipt])
 
-  React.useEffect(() => {
+  // React.useEffect(() => {
   
-    if (data) {
+  //   if (data) {
 
 
 
-      if(tokenId == parseInt(data.tokenId)){
-        setName(data.name)
-        setImageUrl(data.image)
+  //     if(tokenId == parseInt(data.tokenId)){
+  //       setName(data.name)
+  //       setImageUrl(data.image)
 
-        const talkative = getAttribute<boolean>(data,'Talkative')
-        const speed = getAttribute<number>(data,'Speed')|| 0 / 100
-        const laziness = getAttribute<number>(data,'Laziness')|| 0 / 100
-        const color = getAttribute<string>(data,'Color') || '0xffffff'
-        setTalkative(!!talkative)
-        setSpeed(speed)
-        setLaziness(laziness)
-        const newColor = new Color(color)
-        setColor(newColor)
+  //       const talkative = getAttribute<boolean>(data,'Talkative')
+  //       const speed = getAttribute<number>(data,'Speed')|| 0 / 100
+  //       const laziness = getAttribute<number>(data,'Laziness')|| 0 / 100
+  //       const color = getAttribute<string>(data,'Color') || '0xffffff'
+  //       setTalkative(!!talkative)
+  //       setSpeed(speed)
+  //       setLaziness(laziness)
+  //       const newColor = new Color(color)
+  //       setColor(newColor)
 
 
-        if (walker) {
-          walker.walkerInfo.talkative = !!talkative
-          walker.walkerInfo.laziness = laziness
-          walker.walkerInfo.speed = speed
-          walker.walkerInfo.color = parseInt(color.replace('#', '0x'),16)
-          //@ts-ignore
-          walker.mesh.material.color = newColor
-        }
-      }
+  //       if (walker) {
+  //         walker.walkerInfo.talkative = !!talkative
+  //         walker.walkerInfo.laziness = laziness
+  //         walker.walkerInfo.speed = speed
+  //         walker.walkerInfo.color = parseInt(color.replace('#', '0x'),16)
+  //         //@ts-ignore
+  //         walker.mesh.material.color = newColor
+  //       }
+  //     }
 
-    }
-  }, [data])
+  //   }
+  // }, [data])
 
   const onClickOutside = useCallback(
     (e: MouseEvent) => {
@@ -348,6 +348,7 @@ export const Overlay: React.FC<any> = () => {
                       initialValue={speed}
                       onSliderChange={(v) => {
                         if (!walker) return
+                        if(walker.isMinted) return
                         walker.updateSpeed(v)
                         setSpeed(v)
                       }}
@@ -366,6 +367,7 @@ export const Overlay: React.FC<any> = () => {
                       initialValue={laziness}
                       onSliderChange={(v) => {
                         if (!walker) return
+                        if(walker.isMinted) return
                         walker.walkerInfo.laziness = v
                         setLaziness(v)
                       }}

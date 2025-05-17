@@ -4,7 +4,7 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { World } from './World'
 import { Walker } from './Walker'
-import { WearableHat } from './wearables/Wearable'
+import { Wearable } from './wearables/Wearable'
 import { isViewMode } from './utils/featureFlags'
 
 export const CONSTANTS= {
@@ -116,7 +116,7 @@ export function sceneInitializer(
 	world.load()
 
 	const frustrum = new THREE.Frustum()
-
+	Walker.frustrum = frustrum
 	let matrix = new THREE.Matrix4()
 	const animate = () => {
 		stats && stats.begin()
@@ -132,8 +132,7 @@ export function sceneInitializer(
 
 		controls?.update(delta)
 		world.update(delta)
-		Walker.updateWalkers(delta,frustrum)
-		WearableHat.updateAll()
+		Wearable.updateAll()
 		renderer.render(scene, camera)
 		stats && stats.end()
 	}

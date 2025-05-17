@@ -97,7 +97,8 @@ export const ITEMS_LIST = {
             url: '/assets/backpack_orange.glb',
             imageUrl: '/assets/backpack_orange.png',
             scale: 1,
-            positionNudge: { x: 0, y: -0.2, z: -0.05 }
+            positionNudge: { x: 0, y: -0.2, z: 0.1 },
+            rotationNudge: { x: -0.5, y: 0, z: 0 }
         },
         12:{
             category: 'Backpack',
@@ -106,7 +107,8 @@ export const ITEMS_LIST = {
             url: '/assets/backpack_fushia.glb',
             imageUrl: '/assets/backpack_fushia.png',
             scale: 1,
-            positionNudge: { x: 0, y: -0.2, z: -0.05 }
+            positionNudge: { x: 0, y: -0.2, z: 0.1 },
+            rotationNudge: { x: -0.5, y: 0, z: 0 }
         },
         13:{
             category: 'Accessories',

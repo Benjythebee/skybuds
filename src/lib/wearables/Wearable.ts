@@ -2,9 +2,9 @@ import { Bone, DynamicDrawUsage, InstancedMesh, Matrix4, Mesh, Object3D, Quatern
 import { GLTFLoader } from "three/examples/jsm/Addons.js";
 import { Walker } from "../Walker";
 import { applyTransforms } from "../utils/utils";
-import { ITEMS_LIST, WearableID, WearableType, WearableWithIndex } from "./items";
+import { ITEMS_LIST, WearableID, WearableWithIndex } from "./items";
 
-export class WearableHat{
+export class Wearable{
     static GLTFLoader = new GLTFLoader()
     static roots:Record<WearableID,InstancedMesh> = {} as any // Cache the loaded objects
     root:InstancedMesh = null!
@@ -23,9 +23,9 @@ export class WearableHat{
             index:wearableID
         }
 
-        if(!WearableHat.roots[wearableID]){
+        if(!Wearable.roots[wearableID]){
             // Load a root object and then generate instance of it
-            WearableHat.GLTFLoader.loadAsync(this.wearableData.url).then((gltf) => {
+            Wearable.GLTFLoader.loadAsync(this.wearableData.url).then((gltf) => {
                 const group = gltf.scene
                 let mesh:Mesh=null!
                  group.traverse((child) => {
@@ -38,24 +38,28 @@ export class WearableHat{
                 }
                 mesh.removeFromParent()
                 mesh.scale.set(this.wearableData.scale, this.wearableData.scale, this.wearableData.scale)
+                mesh.position.add(this.positionNudge)
+                mesh.rotation.x += this.rotationNudge.x
+                mesh.rotation.y += this.rotationNudge.y
+                mesh.rotation.z += this.rotationNudge.z
                 applyTransforms(mesh)
 
                 const instancedMesh = new InstancedMesh(mesh.geometry, mesh.material, 1000)
                 instancedMesh.instanceMatrix.setUsage( DynamicDrawUsage )
                 instancedMesh.frustumCulled = false
                 this.scene.add(instancedMesh)
-                WearableHat.roots[wearableID] = instancedMesh
+                Wearable.roots[wearableID] = instancedMesh
                 
                 // set local:
                 this.instanceIndex = 0
                 instancedMesh.count = 1
                 this.root = instancedMesh
-                WearableHat.updateInstanceMap(this.wearableID, this.instanceIndex, this)
+                Wearable.updateInstanceMap(this.wearableID, this.instanceIndex, this)
                 this.updateRotPosition()
                 
             })
         }else{
-            this.root = WearableHat.roots[wearableID]
+            this.root = Wearable.roots[wearableID]
             this.createInstance()
         }
         this.targetBone?.add(this._tmpObject)
@@ -70,20 +74,24 @@ export class WearableHat{
         return bone
     }
 
-    get nudge(){
+    get positionNudge(){
         const nudge = this.wearableData.positionNudge
         return new Vector3(nudge.x, nudge.y, nudge.z)
     }
-
-    static updateInstanceMap(wearableID:WearableID,instanceNumber:number, instance:WearableHat){
-        if(!WearableHat.roots[wearableID].userData){
-            WearableHat.roots[wearableID].userData = {}
+    
+    get rotationNudge(){
+        const nudge = 'rotationNudge' in this.wearableData && this.wearableData.rotationNudge
+        return nudge?new Vector3(nudge.x, nudge.y, nudge.z) : new Vector3(0, 0, 0)
+    }
+    static updateInstanceMap(wearableID:WearableID,instanceNumber:number, instance:Wearable){
+        if(!Wearable.roots[wearableID].userData){
+            Wearable.roots[wearableID].userData = {}
         }
-        WearableHat.roots[wearableID].userData[instanceNumber] = instance
+        Wearable.roots[wearableID].userData[instanceNumber] = instance
     }
     
-    static dispose (waerableHat:WearableHat){
-        const root = WearableHat.roots[waerableHat.wearableID]
+    static dispose (waerableHat:Wearable){
+        const root = Wearable.roots[waerableHat.wearableID]
 
         /**
          * When a hat is removed, the count will be going down
@@ -91,7 +99,7 @@ export class WearableHat{
          */
 
         const indexToReplace = waerableHat.instanceIndex // get current index, for example 4
-        const instanceAtLastIndex = root.userData[root.count - 1] as WearableHat // get the last index, for example 5
+        const instanceAtLastIndex = root.userData[root.count - 1] as Wearable // get the last index, for example 5
 
         // Remove the instance from the instance map
         if (root.userData[indexToReplace]) {
@@ -123,14 +131,14 @@ export class WearableHat{
     }
     
     private createInstance(){
-        const root = WearableHat.roots[this.wearableID]
+        const root = Wearable.roots[this.wearableID]
         if(!root){
             throw new Error(`WearableHat: ${this.wearableID} is not loaded yet`)
         }
 
         this.instanceIndex = root.count
         root.count++
-        WearableHat.updateInstanceMap(this.wearableID, this.instanceIndex, this)
+        Wearable.updateInstanceMap(this.wearableID, this.instanceIndex, this)
         this.root.instanceMatrix.needsUpdate = true
 
         this.updateRotPosition()
@@ -146,8 +154,6 @@ export class WearableHat{
         this.instanceMatrix.copy(localMatrix)
         this.instanceMatrix.decompose( this._tmpObject.position, this._tmpObject.quaternion, this._tmpObject.scale )
 
-        this._tmpObject.position.add(this.nudge)
-        
         this._tmpObject.updateMatrixWorld()
 
 
@@ -162,11 +168,11 @@ export class WearableHat{
     }
 
     static updateAll(){
-        for (const id in WearableHat.roots) {
-            const root = WearableHat.roots[parseInt(id) as WearableID]
+        for (const id in Wearable.roots) {
+            const root = Wearable.roots[parseInt(id) as WearableID]
             if (root) {
                 for(let i = 0; i < root.count; i++){
-                    const hat = root.userData[i] as WearableHat
+                    const hat = root.userData[i] as Wearable
                     hat.updateRotPosition()
                 }
                 

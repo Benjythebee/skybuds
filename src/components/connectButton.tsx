@@ -34,7 +34,7 @@ export const ConnectWalletButton = () => {
             {(() => {
               if (!connected) {
                 return (
-                  <button className='cursor-pointer rounded-xl p-2 border-white border-2  hover:bg-white/10 flex gap-2 items-center font-bold' onClick={openConnectModal} type="button">
+                  <button className='cursor-pointer rounded-xl p-2  bg-purple-500  text-white  hover:bg-purple-800 flex gap-2 items-center font-bold' onClick={openConnectModal} type="button">
                    <Link2 className='w-4 h-4 text-white '/> Connect Wallet
                   </button>
                 );
@@ -42,7 +42,7 @@ export const ConnectWalletButton = () => {
 
               if (chain.unsupported) {
                 return (
-                  <button className='cursor-pointer rounded-xl p-2 border-white border-2  hover:bg-white/10 flex gap-2 items-center font-bold' onClick={openChainModal} type="button">
+                  <button className='cursor-pointer rounded-xl p-2  bg-blue-500  text-white  hover:bg-blue-500 flex gap-2 items-center font-bold' onClick={openChainModal} type="button">
                   <Link2 className='w-4 h-4 text-white '/> Change network
                  </button>
                 );
