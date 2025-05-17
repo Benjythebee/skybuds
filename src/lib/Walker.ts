@@ -50,7 +50,6 @@ export const walkerConfigurations = {
     if(Walker.focusedWalker){
       if (Walker.focusedWalker) {
         const speechBubble = new SpeechBubble('Hello! I am a speech bubble!')
-        console.log('speechBubble', speechBubble.getSprite())
         Walker.focusedWalker.scene.add(speechBubble.getSprite())
         speechBubble.followObject(Walker.focusedWalker.object)
         Walker.focusedWalker.speechBubble = speechBubble

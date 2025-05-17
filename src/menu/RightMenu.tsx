@@ -27,7 +27,6 @@ export enum Tabs {
 export const RightMenu: React.FC<ChillMenuProps> = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [page, setPage] = useState(Tabs.MENU)
-  const { address } = useAccount()
 
   const toggleMenu = () => {
     setIsOpen(!isOpen)

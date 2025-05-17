@@ -1,10 +1,11 @@
 import { Object3D, Sprite, SpriteMaterial, Texture, Vector3 } from "three";
 
-export interface BubbleOptions {
+interface BubbleOptions {
   backgroundColor?: string;
   textColor?: string;
   fontSize?: number;
   fontFamily?: string;
+  fontWeight?: string;
   padding?: number;
   borderRadius?: number;
   scale?: number;
@@ -26,14 +27,15 @@ export class SpeechBubble {
     fontSize: number;
     fontFamily: string;
     padding: number;
+    fontWeight: string;
     borderRadius: number;
   };
 
-  constructor(text: string = "", scale: number = 1, offset: Vector3 = new Vector3(0, 1.5, 0)) {
+  constructor(text: string = "", scale: number = 1, offset: Vector3 = new Vector3(0.5, 0.5, 0)) {
     // Create a canvas for the text
     this.textCanvas = document.createElement('canvas');
     this.textCanvas.width = 256;
-    this.textCanvas.height = 128;
+    this.textCanvas.height = 100;
     this.textContext = this.textCanvas.getContext('2d')!;
     this.scale = scale;
     this.offset = offset;
@@ -41,11 +43,12 @@ export class SpeechBubble {
     
     // Default styling options
     this.options = {
-      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+      backgroundColor: 'rgba(255, 255, 255, 1)',
       textColor: 'black',
       fontSize: 14,
       fontFamily: 'Arial',
-      padding: 10,
+      fontWeight: '900',
+      padding: 2,
       borderRadius: 10
     };
 
@@ -62,7 +65,7 @@ export class SpeechBubble {
     
     // Create the sprite
     this.sprite = new Sprite(this.material);
-    this.sprite.scale.set(this.scale * 2, this.scale, 1);
+    this.sprite.scale.set(this.scale, this.scale, 1);
     
     // Set the text
     this.drawBubble();
@@ -83,6 +86,7 @@ export class SpeechBubble {
       if (options.backgroundColor) this.options.backgroundColor = options.backgroundColor;
       if (options.textColor) this.options.textColor = options.textColor;
       if (options.fontSize) this.options.fontSize = options.fontSize;
+      if (options.fontWeight) this.options.fontWeight = options.fontWeight;
       if (options.fontFamily) this.options.fontFamily = options.fontFamily;
       if (options.padding) this.options.padding = options.padding;
       if (options.borderRadius) this.options.borderRadius = options.borderRadius;
@@ -104,26 +108,27 @@ export class SpeechBubble {
     // Draw speech bubble background
     this.textContext.fillStyle = this.options.backgroundColor;
     this.drawRoundedRect(
-      this.options.padding, 
-      this.options.padding, 
-      this.textCanvas.width - (this.options.padding * 2), 
+      this.options.padding,
+      this.options.padding,
+      this.textCanvas.width - (this.options.padding * 2),
+      // Leave some space for the pointer
       this.textCanvas.height - (this.options.padding * 2) - 20, 
       this.options.borderRadius
     );
     
-    // Draw the pointer/tail of the speech bubble
     this.textContext.beginPath();
-    this.textContext.moveTo(this.textCanvas.width / 2 - 10, this.textCanvas.height - 30);
-    this.textContext.lineTo(this.textCanvas.width / 2, this.textCanvas.height - 10);
-    this.textContext.lineTo(this.textCanvas.width / 2 + 10, this.textCanvas.height - 30);
+    // Calculate a position that's about 1/4 of the way to the right
+    const pointerX = this.textCanvas.width * 0.25;
+    this.textContext.moveTo(pointerX - 10, this.textCanvas.height - 25);
+    this.textContext.lineTo(pointerX, this.textCanvas.height - 10);
+    this.textContext.lineTo(pointerX + 10, this.textCanvas.height - 25);
     this.textContext.fill();
     
     // Draw text
     this.textContext.fillStyle = this.options.textColor;
-    this.textContext.font = `${this.options.fontSize}px ${this.options.fontFamily}`;
+    this.textContext.font = `${this.options.fontWeight} ${this.options.fontSize}px ${this.options.fontFamily}`;
     this.textContext.textAlign = 'center';
     this.textContext.textBaseline = 'middle';
-    
     // Handle multi-line text
     const lines = this.wrapText(this.text, this.textCanvas.width - (this.options.padding * 4));
     const lineHeight = this.options.fontSize + 4;
@@ -145,6 +150,9 @@ export class SpeechBubble {
     const words = text.split(' ');
     const lines: string[] = [];
     let currentLine = words[0];
+
+    // Set the font for text measurement
+    this.textContext.font = `${this.options.fontWeight} ${this.options.fontSize}px ${this.options.fontFamily}`;
 
     for (let i = 1; i < words.length; i++) {
       const word = words[i];
