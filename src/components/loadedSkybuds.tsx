@@ -11,8 +11,8 @@ export const LoadedSkyBuds = () => {
 
     const {world} = useSceneContext();
 
-    // const {data,isLoading} = useSkybuds('testnet');
-    const data = []
+    const {data,isLoading} = useSkybuds('testnet');
+
     console.log('data',data)    
     React.useEffect(() => { 
         if(world && data.length){
