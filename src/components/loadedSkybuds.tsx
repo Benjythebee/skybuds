@@ -1,6 +1,6 @@
 import { Walker } from "../lib/Walker";
 import { ITEMS_LIST } from "../lib/wearables/items";
-import { WearableHat } from "../lib/wearables/Wearable";
+import { Wearable } from "../lib/wearables/Wearable";
 import React from "react";
 import { useSceneContext } from "../store/SceneContext";
 import { useSkybuds } from "../hooks/useSkybuds"
@@ -12,6 +12,7 @@ export const LoadedSkyBuds = () => {
     const {world} = useSceneContext();
 
     const {data,isLoading} = useSkybuds('testnet');
+
     console.log('data',data)    
     React.useEffect(() => { 
         if(world && data.length){
@@ -41,7 +42,7 @@ export const LoadedSkyBuds = () => {
                 for(const wearableID of wearables){
                     const uint = wearableID as keyof typeof ITEMS_LIST
                     const wearable = ITEMS_LIST[uint]
-                    walker.hatWearables[wearable.category]= new WearableHat(world.scene,walker,uint)
+                    walker.hatWearables[wearable.category]= new Wearable(world.scene,walker,uint)
                 }
 
             })

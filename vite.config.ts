@@ -12,5 +12,10 @@ export default defineConfig({
       input: resolve(__dirname, 'index.html'),
     },
     outDir:'./dist'
+  },
+  resolve: {
+    alias: {
+       'three/tsl': 'three/webgpu',
+    }
   }
 })

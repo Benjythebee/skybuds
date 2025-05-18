@@ -1,7 +1,7 @@
 import { cn } from "../lib/ui-helpers/cn"
 import { Walker } from "../lib/Walker"
 import { ITEMS_BY_CATEGORY, WearableWithIndex } from "../lib/wearables/items"
-import { WearableHat } from "../lib/wearables/Wearable"
+import { Wearable } from "../lib/wearables/Wearable"
 import React, { useState } from "react"
 import { useSceneContext } from "../store/SceneContext"
 import { create } from "zustand"
@@ -20,7 +20,7 @@ export const useWearableOverlayStore = create<{
 export const WearablesGrid = ()=>{
     const { isOpen } = useWearableOverlayStore()
     const {world} = useSceneContext()
-    const [selectedItem, setSelectedItem] = useState<WearableHat | null>(null)
+    const [selectedItem, setSelectedItem] = useState<Wearable | null>(null)
     const [selectedCategory, setSelectedCategory] = useState(Object.keys(ITEMS_BY_CATEGORY)[0])
 
     const handleSelectItem = (item: WearableWithIndex) => {
@@ -33,10 +33,10 @@ export const WearablesGrid = ()=>{
       const prevItem = focusedWalker.hatWearables![item.category]
       if (prevItem?.wearableData.category == item.category) {
         // remove previous item
-        WearableHat.dispose(prevItem)
+        Wearable.dispose(prevItem)
       }
       
-      focusedWalker.hatWearables![item.category] = new WearableHat(world.scene, focusedWalker, item.index)
+      focusedWalker.hatWearables![item.category] = new Wearable(world.scene, focusedWalker, item.index)
       setSelectedItem(focusedWalker.hatWearables![item.category])
       
     }
@@ -48,7 +48,7 @@ export const WearablesGrid = ()=>{
       const item = focusedWalker.hatWearables[category]
       if(item){
         setSelectedItem(null)
-        WearableHat.dispose(item)
+        Wearable.dispose(item)
         delete focusedWalker.hatWearables[category]
       }
     }

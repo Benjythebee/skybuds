@@ -9,13 +9,16 @@ import { Overlay } from "./menu/overlay";
 import { LoadedSkyBuds } from "./components/loadedSkybuds";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { isViewMode } from "./lib/utils/featureFlags";
+import { useIsMobile } from "./hooks/useIsMobile";
 
 export const App = () => {
     const ref = React.useRef<HTMLDivElement>(null);
+    const isMobile = useIsMobile()
     React.useEffect(() => {
         if(ref.current === null) return;
         const guiContainer = ref.current
         if(isViewMode) return
+        if(isMobile) return
         guiContainer.appendChild(gui.domElement);
     },[ref.current]);
 

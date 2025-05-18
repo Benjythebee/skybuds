@@ -4,8 +4,9 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { World } from './World'
 import { Walker } from './Walker'
-import { WearableHat } from './wearables/Wearable'
+import { Wearable } from './wearables/Wearable'
 import { isViewMode } from './utils/featureFlags'
+import SpatialSound from './SpatialSounds'
 
 export const CONSTANTS= {
 	maxDistance: 40,
@@ -98,6 +99,7 @@ export function sceneInitializer(
 		initRotation:camera.rotation.clone(),
 		controlTarget:controls.target.clone(),
 	}
+	SpatialSound.attachListenerToCamera(camera)
 	const handleResize = () => {
 		renderer.setSize(window.innerWidth, window.innerHeight)
 		camera.aspect = window.innerWidth / window.innerHeight
@@ -116,7 +118,7 @@ export function sceneInitializer(
 	world.load()
 
 	const frustrum = new THREE.Frustum()
-
+	Walker.frustrum = frustrum
 	let matrix = new THREE.Matrix4()
 	const animate = () => {
 		stats && stats.begin()
@@ -132,8 +134,7 @@ export function sceneInitializer(
 
 		controls?.update(delta)
 		world.update(delta)
-		Walker.updateWalkers(delta,frustrum)
-		WearableHat.updateAll()
+		Wearable.updateAll()
 		renderer.render(scene, camera)
 		stats && stats.end()
 	}

@@ -5,14 +5,18 @@ import React, { useCallback } from 'react'
 import { useSceneContext } from '../store/SceneContext'
 import { Color, Vector3 } from 'three'
 import { useWearableOverlayStore, WearablesGrid } from './WearableOverlay'
-import {  usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
+import {  useAccount, usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
 import SkybudsABI from '../web3/SkyBudsABI.json'
 import {  useSkyBudMetadata } from '../hooks/useSkyBudMetadata'
 import { getAttribute } from '../web3/utils'
+import { useViewContext } from '../store/ViewContext'
 
 
 export const Overlay: React.FC<any> = () => {
   const { world, screenshotManager } = useSceneContext()
+  const { isGuest } = useViewContext()
+  const { address } = useAccount()
+
   const { isOpen, setOpen } = useWearableOverlayStore()
   const [walker, setWalker] = React.useState<Walker | null>(null)
   const ref = React.useRef<HTMLDivElement>(null)
@@ -29,7 +33,10 @@ export const Overlay: React.FC<any> = () => {
 
   const {  data: hash, error, isPending,writeContract } = useWriteContract()
 
-  const {data,isLoading:IsLoadingMintedMetadata} = useSkyBudMetadata(tokenId)
+
+  const isOnline = !!isGuest || !!address
+
+  // const {data,isLoading:IsLoadingMintedMetadata} = useSkyBudMetadata(tokenId)
 
   const {
     data:txReceipt,
@@ -42,6 +49,8 @@ export const Overlay: React.FC<any> = () => {
 
   const wagmiClient = usePublicClient()
   const onMint = async (imageUrl:string) => {
+    //close wearable overlay
+    setOpen(false)
     const parameters = {
       wearables: walker!.hatWearables?Object.values(walker!.hatWearables).map((wearable) => wearable.wearableData.index):[],
       laziness: Math.max(0,Math.min(100,Math.floor(laziness*100))),
@@ -58,7 +67,6 @@ export const Overlay: React.FC<any> = () => {
           imageUrl,
         ]
       console.log('Minting with parameters:', args)
-    console.log('Minting with parameters:', args)
     try{
       const tx = await wagmiClient?.estimateContractGas({
         address: (import.meta.env.VITE_DEPLOYED_SKYBUDS || '0x') as `0x${string}`,
@@ -110,39 +118,39 @@ export const Overlay: React.FC<any> = () => {
       }
   },[isSuccess, txReceipt])
 
-  React.useEffect(() => {
+  // React.useEffect(() => {
   
-    if (data) {
+  //   if (data) {
 
 
 
-      if(tokenId == parseInt(data.tokenId)){
-        setName(data.name)
-        setImageUrl(data.image)
+  //     if(tokenId == parseInt(data.tokenId)){
+  //       setName(data.name)
+  //       setImageUrl(data.image)
 
-        const talkative = getAttribute<boolean>(data,'Talkative')
-        const speed = getAttribute<number>(data,'Speed')|| 0 / 100
-        const laziness = getAttribute<number>(data,'Laziness')|| 0 / 100
-        const color = getAttribute<string>(data,'Color') || '0xffffff'
-        setTalkative(!!talkative)
-        setSpeed(speed)
-        setLaziness(laziness)
-        const newColor = new Color(color)
-        setColor(newColor)
+  //       const talkative = getAttribute<boolean>(data,'Talkative')
+  //       const speed = getAttribute<number>(data,'Speed')|| 0 / 100
+  //       const laziness = getAttribute<number>(data,'Laziness')|| 0 / 100
+  //       const color = getAttribute<string>(data,'Color') || '0xffffff'
+  //       setTalkative(!!talkative)
+  //       setSpeed(speed)
+  //       setLaziness(laziness)
+  //       const newColor = new Color(color)
+  //       setColor(newColor)
 
 
-        if (walker) {
-          walker.walkerInfo.talkative = !!talkative
-          walker.walkerInfo.laziness = laziness
-          walker.walkerInfo.speed = speed
-          walker.walkerInfo.color = parseInt(color.replace('#', '0x'),16)
-          //@ts-ignore
-          walker.mesh.material.color = newColor
-        }
-      }
+  //       if (walker) {
+  //         walker.walkerInfo.talkative = !!talkative
+  //         walker.walkerInfo.laziness = laziness
+  //         walker.walkerInfo.speed = speed
+  //         walker.walkerInfo.color = parseInt(color.replace('#', '0x'),16)
+  //         //@ts-ignore
+  //         walker.mesh.material.color = newColor
+  //       }
+  //     }
 
-    }
-  }, [data])
+  //   }
+  // }, [data])
 
   const onClickOutside = useCallback(
     (e: MouseEvent) => {
@@ -325,7 +333,7 @@ export const Overlay: React.FC<any> = () => {
                   {/**
                    * Checkbox
                    */}
-                  <input
+                  {walker?.isMinted ? (talkative?'Yes':'No'):<input
                     type="checkbox"
                     className="cursor-pointer"
                     checked={talkative}
@@ -334,7 +342,7 @@ export const Overlay: React.FC<any> = () => {
                       walker.walkerInfo.talkative = e.target.checked
                       setTalkative(e.target.checked)
                     }}
-                  />
+                  />}
                 </span>
                 <span className="text-sm text-gray-400 flex items-center">
                   Speed
@@ -348,6 +356,7 @@ export const Overlay: React.FC<any> = () => {
                       initialValue={speed}
                       onSliderChange={(v) => {
                         if (!walker) return
+                        if(walker.isMinted) return
                         walker.updateSpeed(v)
                         setSpeed(v)
                       }}
@@ -366,6 +375,7 @@ export const Overlay: React.FC<any> = () => {
                       initialValue={laziness}
                       onSliderChange={(v) => {
                         if (!walker) return
+                        if(walker.isMinted) return
                         walker.walkerInfo.laziness = v
                         setLaziness(v)
                       }}
@@ -383,7 +393,7 @@ export const Overlay: React.FC<any> = () => {
               </div>
             </div>
           )}
-          {!isMinting && (<div
+          {!isMinting && !walker?.isMinted && (<div
             data-active={!!walker}
             className=" pointer-events-none data-[active=true]:pointer-events-auto flex flex-col gap-2 data-[active=true]:visible invisible"
           >
@@ -395,14 +405,14 @@ export const Overlay: React.FC<any> = () => {
             >
               <Shirt className="w-4 h-4" /> Wearables
             </button>
-            <button
+            {isOnline && <button
               className="cursor-pointer flex gap-1 items-center text-black font-bold bg-purple-500 hover:bg-purple-800 rounded-lg px-4 py-2"
               onClick={() => {
                 screenshotAndMint()
               }}
             >
               <CircleCheck className="w-4 h-4" /> Mint
-            </button>
+            </button>}
             {/* <button
               className="cursor-pointer flex gap-1 items-center text-black font-bold bg-gray-500 hover:bg-gray-800 rounded-lg px-2 py-2"
               onClick={() => {
