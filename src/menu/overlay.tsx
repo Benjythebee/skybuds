@@ -33,7 +33,8 @@ export const Overlay: React.FC<any> = () => {
 
   const {  data: hash, error, isPending,writeContract } = useWriteContract()
 
-  const isOnline = !!isGuest && !!address
+
+  const isOnline = !!isGuest || !!address
 
   // const {data,isLoading:IsLoadingMintedMetadata} = useSkyBudMetadata(tokenId)
 
@@ -48,6 +49,8 @@ export const Overlay: React.FC<any> = () => {
 
   const wagmiClient = usePublicClient()
   const onMint = async (imageUrl:string) => {
+    //close wearable overlay
+    setOpen(false)
     const parameters = {
       wearables: walker!.hatWearables?Object.values(walker!.hatWearables).map((wearable) => wearable.wearableData.index):[],
       laziness: Math.max(0,Math.min(100,Math.floor(laziness*100))),
