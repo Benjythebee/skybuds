@@ -16,11 +16,12 @@
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "^12.7.0",
+    "@pmndrs/vanilla": "^1.20.4",
     "@rainbow-me/rainbowkit": "^2.2.4",
     "@tailwindcss/vite": "4.1.4",
-    "@vitejs/plugin-react-swc": "^3.8.0",
     "@tanstack/react-query": "^5.75.1",
     "@types/three": "^0.173.0",
+    "@vitejs/plugin-react-swc": "^3.8.0",
     "cva": "1.0.0-beta.3",
     "events": "^3.3.0",
     "gsap": "^3.12.7",
@@ -31,8 +32,8 @@
     "stats.js": "^0.17.0",
     "tailwind-merge": "^3.2.0",
     "three": "^0.173.0",
-    "vite": "^6.3.3",
     "viem": "2.x",
+    "vite": "^6.3.3",
     "wagmi": "^2.15.2",
     "zustand": "^5.0.3"
   },

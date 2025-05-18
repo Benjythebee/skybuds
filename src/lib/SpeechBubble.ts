@@ -31,10 +31,10 @@ export class SpeechBubble {
     borderRadius: number;
   };
 
-  constructor(text: string = "", scale: number = 1, offset: Vector3 = new Vector3(0.5, 0.5, 0)) {
+  constructor(text: string = "", scale: number = 0.25, offset: Vector3 = new Vector3(0.1, 0.5, 0)) {
     // Create a canvas for the text
     this.textCanvas = document.createElement('canvas');
-    this.textCanvas.width = 256;
+    this.textCanvas.width = 200;
     this.textCanvas.height = 100;
     this.textContext = this.textCanvas.getContext('2d')!;
     this.scale = scale;
@@ -48,7 +48,7 @@ export class SpeechBubble {
       fontSize: 14,
       fontFamily: 'Arial',
       fontWeight: '900',
-      padding: 2,
+      padding: 1,
       borderRadius: 10
     };
 
@@ -65,8 +65,7 @@ export class SpeechBubble {
     
     // Create the sprite
     this.sprite = new Sprite(this.material);
-    this.sprite.scale.set(this.scale, this.scale, 1);
-    
+    this.sprite.scale.set(this.scale, this.scale*0.5, 1);
     // Set the text
     this.drawBubble();
   }
@@ -92,7 +91,7 @@ export class SpeechBubble {
       if (options.borderRadius) this.options.borderRadius = options.borderRadius;
       if (options.scale) {
         this.scale = options.scale;
-        this.sprite.scale.set(this.scale * 2, this.scale, 1);
+        this.sprite.scale.set(this.scale, this.scale*0.5, 1);
       }
       if (options.offset) this.offset = options.offset;
     }
@@ -130,14 +129,14 @@ export class SpeechBubble {
     this.textContext.textAlign = 'center';
     this.textContext.textBaseline = 'middle';
     // Handle multi-line text
-    const lines = this.wrapText(this.text, this.textCanvas.width - (this.options.padding * 4));
+    const lines = this.wrapText(this.text, this.textCanvas.width - (this.options.padding * 2));
     const lineHeight = this.options.fontSize + 4;
     const startY = (this.textCanvas.height - (this.options.padding * 2) - 20) / 2 - (lines.length - 1) * lineHeight / 2;
-    
+
     lines.forEach((line, index) => {
       this.textContext.fillText(
         line, 
-        this.textCanvas.width / 2, 
+        this.textCanvas.width / 2,
         startY + index * lineHeight
       );
     });
@@ -197,5 +196,10 @@ export class SpeechBubble {
   public dispose(): void {
     this.material.dispose();
     this.texture.dispose();
+    this.textCanvas = null!;
+    this.textContext = null!;
+    this.sprite = null!;
+    this.material = null!;
+    this.texture = null!;
   }
 }

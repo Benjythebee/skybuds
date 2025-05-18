@@ -6,6 +6,7 @@ import { FireFlies } from './utils/fireflies';
 class DayNightCycle {
   private scene: Scene;
   private sun: DirectionalLight;
+  private sun2: DirectionalLight;
   private moon: DirectionalLight;
   private ambientLight: AmbientLight;
   private skyDome: Mesh<BufferGeometry, MeshBasicMaterial>;
@@ -43,17 +44,25 @@ class DayNightCycle {
     // Create sun directional light
     this.sun = new DirectionalLight(this.sunColor, 1);
     this.sun.position.copy(initPosition)
+    this.sun2 = new DirectionalLight(this.sunColor, 1);
+    this.sun.add(this.sun2)
     this.sun.castShadow = true;
     this.sun.shadow.mapSize.width = 2048;
     this.sun.shadow.mapSize.height = 2048;
     this.sun.shadow.camera.near = 0.5;
     this.sun.shadow.camera.far = 50;
+    this.sun2.castShadow = true;
+    this.sun2.shadow.mapSize.width = 1024;
+    this.sun2.shadow.mapSize.height = 1024;
+    this.sun2.shadow.camera.near = 0.5;
+    this.sun2.shadow.camera.far = 50;
+
     const sunTarget = new Object3D();
     this.scene.add(sunTarget);
     sunTarget.position.copy(initPosition);
     this.sunHelper = new DirectionalLightHelper(this.sun, 5, 0x00ff00);
     this.sunHelper.visible = false; // Hide moon helper by default
-    this.scene.add(this.sun,this.sunHelper);
+    this.scene.add(this.sun,this.sunHelper,this.sun2);
     
     // Create moon directional light
     this.moon = new DirectionalLight(this.moonColor, 0.2);
@@ -64,7 +73,7 @@ class DayNightCycle {
     this.scene.add(this.moon,this.moonHelper);
     
     // Create ambient light for global illumination
-    this.ambientLight = new AmbientLight(0x404040, 0.2);
+    this.ambientLight = new AmbientLight(0x404040, 0.7);
     this.scene.add(this.ambientLight);
     
     // Create sky dome
@@ -225,6 +234,7 @@ class DayNightCycle {
     // The sun should be brightest at noon, and dimmer toward sunrise/sunset
     const sunIntensity = Math.max(0, sunHeight);
     this.sun.intensity = sunIntensity;
+    this.sun2.intensity = Math.max(0.3, sunIntensity);
     
     // Moon is brightest at midnight, and becomes invisible during the day
     const moonIntensity = Math.max(0, -sunHeight * 0.2);
@@ -268,6 +278,7 @@ class DayNightCycle {
       skyColor = this.nightColor.clone();
     }
     
+    this.sun2.color = skyColor.clone().multiplyScalar(0.8);
     // Apply sky color
     (this.skyDome.material as MeshBasicMaterial).color = skyColor;
     this.nightSky.material.opacity = this.isDay?0:moonIntensity+0.1

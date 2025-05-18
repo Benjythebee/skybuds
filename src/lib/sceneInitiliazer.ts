@@ -6,6 +6,7 @@ import { World } from './World'
 import { Walker } from './Walker'
 import { Wearable } from './wearables/Wearable'
 import { isViewMode } from './utils/featureFlags'
+import SpatialSound from './SpatialSounds'
 
 export const CONSTANTS= {
 	maxDistance: 40,
@@ -98,6 +99,7 @@ export function sceneInitializer(
 		initRotation:camera.rotation.clone(),
 		controlTarget:controls.target.clone(),
 	}
+	SpatialSound.attachListenerToCamera(camera)
 	const handleResize = () => {
 		renderer.setSize(window.innerWidth, window.innerHeight)
 		camera.aspect = window.innerWidth / window.innerHeight

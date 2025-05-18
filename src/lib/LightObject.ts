@@ -12,6 +12,8 @@ export class LightObject {
             this.light.position.y += 1
             this.light.target = mesh
             this.light.castShadow = true;
+            this.light.shadow.mapSize.width = 512;
+            this.light.shadow.mapSize.height = 512;
             this.world.island.add(this.light)
             this.mesh.material.emissiveIntensity = this.baseEmissiveIntensity
         }

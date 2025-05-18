@@ -21,17 +21,26 @@ import {
 } from 'three'
 import { World, worldParameters } from './World'
 import { GLTFLoader, SkeletonUtils } from 'three/examples/jsm/Addons.js'
-import { useAudioContext } from '../store/AudioContext'
 import { gui } from './config'
 import { AnimationManager } from './animationManager'
 import { EventEmitter } from 'events'
 import { Wearable } from './wearables/Wearable'
 import { isViewMode } from './utils/featureFlags'
-import { applyTransforms } from './utils/utils'
+import { applyTransforms, gaussianRandom } from './utils/utils'
 import { SpeechBubble } from './SpeechBubble'
 
-////// HEEEEEEEERRRRREEEEEEEEEEE https://stackblitz.com/edit/three-ezinstancedmesh2-skinning?file=src%2Fmain.ts
-
+const conversationalHellos = [
+  'Hello!',
+  'Hi there!',
+  'Greetings!',
+  'Howdy!',
+  "What's up?",
+  'Hey!',
+  'Salutations!',
+  'Bonjour!',
+  'Hola!',
+  'Ciao!'
+]
 /***
  * =============================
  *  WALKERS CONFIGURATIONS
@@ -47,9 +56,9 @@ export const walkerConfigurations = {
     Walker.removeWalker(Walker.walkers.length - 1)
   },
   createSpeechBubble: () => {
-    if(Walker.focusedWalker){
+    if (Walker.focusedWalker) {
       if (Walker.focusedWalker) {
-        const speechBubble = new SpeechBubble('Hello! I am a speech bubble!')
+        const speechBubble = new SpeechBubble('. . .')
         Walker.focusedWalker.scene.add(speechBubble.getSprite())
         speechBubble.followObject(Walker.focusedWalker.object)
         Walker.focusedWalker.speechBubble = speechBubble
@@ -87,7 +96,9 @@ const onHandleWearableChange = (label: 'x' | 'y' | 'z') => (value: number) => {
 folder1.add(walkerConfigurations, 'debug').name('Debug').onChange(onToggleDebug)
 folder1.add(walkerConfigurations, 'addWalker').name('Add Walker')
 folder1.add(walkerConfigurations, 'removeWalker').name('Remove Walker')
-folder1.add(walkerConfigurations, 'createSpeechBubble').name('Create Speech Bubble')
+folder1
+  .add(walkerConfigurations, 'createSpeechBubble')
+  .name('Create Speech Bubble')
 folder1
   .add(walkerConfigurations, 'focusedWalker')
   .name('Focused Walker')
@@ -163,13 +174,6 @@ type walkerParams = {
 
 const mouse = new Vector2()
 
-function gaussianRandom(mean = 0, stdev = 1): number {
-  const u = 1 - Math.random() // Converting [0,1) to (0,1]
-  const v = Math.random()
-  const z = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v)
-  // Transform to the desired mean and standard deviation:
-  return Math.max(0, Math.min(1, z * stdev + mean))
-}
 export class Walker {
   static size = 0.5 //overwritten
   static rootBoundingBox = new Box3()
@@ -230,12 +234,11 @@ export class Walker {
   ) {
     this.id = Walker.walkers.length
 
-    if(!Walker.interval){
+    if (!Walker.interval) {
       Walker.interval = setInterval(() => {
         Walker.updateWalkers(Walker.clock.getDelta(), Walker.frustrum)
-      }, 1000/30) // 30 fps
+      }, 1000 / 30) // 30 fps
     }
-
 
     this.object = props.cube
     this.mesh = props.mesh
@@ -493,6 +496,12 @@ export class Walker {
   speechBubble: SpeechBubble | null = null
 
   update(deltaTime: number) {
+
+
+    if (this.speechBubble) {
+      this.speechBubble.followObject(this.object)
+    }
+
     if (
       this.currentState == CharacterState.TALKING ||
       this.currentState == CharacterState.SITTING ||
@@ -532,10 +541,6 @@ export class Walker {
       this.object.position.copy(newPosition)
 
       this.object.rotation.y = Math.atan2(this.direction.x, this.direction.z)
-
-      if(this.speechBubble){
-        this.speechBubble.followObject(this.object);
-      }
 
       if (Walker.focusedWalker?.id == this.id) {
         // Move controls to new position so we're always following the walker but  we allow the camera to move freely
@@ -598,6 +603,7 @@ export class Walker {
 
       if (collisionWithOtherWalker.length > 0) {
         if (isViewMode) return // in view mode, we dont want to trigger conversations
+        if (!this.world.dayNightCycle.isDay) return // at night time, we dont want to trigger conversations
         if (Math.random() < 0.5) {
           let otherWalker: Walker = (collisionWithOtherWalker[0] as any).walker
 
@@ -605,41 +611,14 @@ export class Walker {
             // ignore if sitting
             return
           }
-            // Create speech bubble and add to scene
-            // const speechBubble = new SpeechBubble("Hello! I'm a THREE.js speech bubble using SpriteMaterial!", 2);
-            // this.scene.add(speechBubble.getSprite());
-            // this.speechBubble = speechBubble
- 
 
           // For 5 seconds, don't re-play a conversation - to avoid spam
-          // if (
-          //   this.lastConversationTime + 10000 < Date.now() &&
-          //   otherWalker.lastConversationTime + 10000 < Date.now()
-          // ) {
-          //   if (!this.hasState(CharacterState.TALKING)) {
-          //     // Character isnt expected to be talking already, so play a conversation
-          //     useAudioContext.getState().playRandomConversation()
-          //     this.addStateToQueue(CharacterState.TALKING, {
-          //       duration: 4,
-          //       loop: false
-          //     })
-
-          //     if (otherWalker) {
-          //       // Apply the same state to the other walker
-          //       otherWalker.lastConversationTime = Date.now()
-          //       otherWalker.addStateToQueue(CharacterState.TALKING, {
-          //         duration: 4,
-          //         loop: false
-          //       })
-          //       const faceWalker = this.object.position
-          //         .clone()
-          //         .sub(otherWalker.object.position)
-          //         .normalize()
-          //       faceWalker.y = 0
-          //       otherWalker.changeWalkerDirection(faceWalker)
-          //     }
-          //   }
-          // }
+          if (
+            this.lastConversationTime + 10000 < Date.now() &&
+            otherWalker.lastConversationTime + 10000 < Date.now()
+          ) {
+            this.converseWithWalker(otherWalker)
+          }
         }
       }
 
@@ -675,6 +654,63 @@ export class Walker {
     }
 
     this.updateState()
+  }
+
+  private converseWithWalker(otherWalker: Walker) {
+    const showBubbles = () => {
+      // Create speech bubble and add to scene
+      const randomHello1 =
+        conversationalHellos[
+          Math.floor(Math.random() * conversationalHellos.length)
+        ]
+      const speechBubble1 = new SpeechBubble(randomHello1)
+      this.scene.add(speechBubble1.getSprite())
+      this.speechBubble = speechBubble1
+
+      const randomHello2 =
+        conversationalHellos[
+          Math.floor(Math.random() * conversationalHellos.length)
+        ]
+      const speechBubble2 = new SpeechBubble(randomHello2)
+      this.scene.add(speechBubble2.getSprite())
+      otherWalker.speechBubble = speechBubble2
+      speechBubble2.followObject(otherWalker.object)
+      setTimeout(() => {
+        if (this.speechBubble) {
+          this.scene.remove(this.speechBubble.getSprite())
+          this.speechBubble?.dispose()
+          this.speechBubble = null
+        }
+        if (otherWalker.speechBubble) {
+          this.scene.remove(otherWalker.speechBubble.getSprite())
+          otherWalker.speechBubble?.dispose()
+          otherWalker.speechBubble = null
+        }
+      }, 3000)
+    }
+
+    if (!this.hasState(CharacterState.TALKING)) {
+      // Character isnt expected to be talking already, so play a conversation
+      this.addStateToQueue(CharacterState.TALKING, {
+        duration: 4,
+        loop: false
+      })
+      showBubbles()
+      if (otherWalker) {
+        // Apply the same state to the other walker
+        otherWalker.lastConversationTime = Date.now()
+        otherWalker.addStateToQueue(CharacterState.TALKING, {
+          duration: 4,
+          loop: false
+        })
+        const faceWalker = this.object.position
+          .clone()
+          .sub(otherWalker.object.position)
+          .normalize()
+        faceWalker.y = 0
+        otherWalker.changeWalkerDirection(faceWalker)
+      }
+    }
   }
 
   hasState(state: CharacterState) {
