@@ -30,6 +30,15 @@ export const RightMenu: React.FC<ChillMenuProps> = () => {
     setIsOpen(!isOpen)
   }
 
+  const onToggleDebug = () => {
+        setDebug(!isDebug)
+      World.instance.toggleDebug()
+      World.instance.innerBoundingBoxHelper.visible = !isDebug
+      World.instance.dayNightCycle.moonHelper!.visible = !isDebug
+      World.instance.dayNightCycle.sunHelper!.visible = !isDebug
+
+      document.getElementById('gui_container')!.style.display = isDebug ? 'none' : 'block'
+  }
 
   const onToggleMute = () => {
       setMuted(!muted)
@@ -139,11 +148,7 @@ export const RightMenu: React.FC<ChillMenuProps> = () => {
                     <button
                     className={'smallMenuButton'}
                     onClick={()=>{
-                      setDebug(!isDebug)
-                        World.instance.toggleDebug()
-                        World.instance.innerBoundingBoxHelper.visible = !isDebug
-                        World.instance.dayNightCycle.moonHelper!.visible = !isDebug
-                        World.instance.dayNightCycle.sunHelper!.visible = !isDebug
+                      onToggleDebug()
                     }}>
                         {isDebug?<Grid2X2X className='w-6 h-6' />:<Grid2X2  className='w-6 h-6' />}
                     </button>
