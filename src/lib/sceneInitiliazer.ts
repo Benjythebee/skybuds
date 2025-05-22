@@ -19,14 +19,15 @@ export function sceneInitializer(
 	//"editor-scene"
 	const canvasRef = document.getElementById('canvas-render') as HTMLCanvasElement
 	if (!canvasRef) throw new Error('Canvas not found')
-        console.log('canvasRef',canvasRef)
-	const isDebug = window?.location.search.includes('debug')
+
 	let stats:Stats = null!
-	// if (isDebug) {
-		stats = new Stats();
-		stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
-		document.body.appendChild( stats.dom );
-	// }
+
+	stats = new Stats();
+	stats.showPanel( 0 ); // 0: fps, 1: ms, 2: mb, 3+: custom
+	stats.dom.id= 'stats.fps'
+	stats.dom.style.display = 'none'
+	document.body.appendChild( stats.dom );
+	
 
 	const scene = new THREE.Scene()
 

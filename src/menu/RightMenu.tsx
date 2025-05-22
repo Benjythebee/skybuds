@@ -6,7 +6,7 @@ import { ArrowLeftCircle, BadgeCheck, Grid2X2, Grid2X2X, HeadphoneOff, Headphone
 import { AddTab } from './add'
 import SpatialSound from '../lib/SpatialSounds'
 import { World } from '../lib/World'
-
+import {gui} from '../lib/config'
 interface ChillMenuProps {
   onAddSkyBud?: () => void
   onViewSkyBuds?: () => void
@@ -37,7 +37,9 @@ export const RightMenu: React.FC<ChillMenuProps> = () => {
       World.instance.dayNightCycle.moonHelper!.visible = !isDebug
       World.instance.dayNightCycle.sunHelper!.visible = !isDebug
 
-      document.getElementById('gui_container')!.style.display = isDebug ? 'none' : 'block'
+      gui.domElement.style.display = isDebug ? 'none' : 'block'
+      document.getElementById('stats.fps')!.style.display = isDebug ? 'none' : 'block'
+      
   }
 
   const onToggleMute = () => {

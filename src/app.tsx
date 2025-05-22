@@ -19,8 +19,8 @@ export const App = () => {
         const guiContainer = ref.current
         if(isViewMode) return
         if(isMobile) return
-        gui.domElement.style.display = 'none'
         guiContainer.appendChild(gui.domElement);
+        gui.domElement.style.display = 'none'
     },[ref.current]);
 
     const queryClient = React.useMemo(() => {
