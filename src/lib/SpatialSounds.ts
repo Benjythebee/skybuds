@@ -81,12 +81,6 @@ export class SpatialSound {
     this.sound.setMaxDistance(this.initOptions.maxDistance ?? 100)
     this.sound.setDistanceModel('exponential')
 
-    // Resume audio context
-    console.log(this.sound.getVolume())
-    console.log(this.sound.getRolloffFactor())
-    console.log(this.sound.getMaxDistance())
-    console.log(this.sound.getDistanceModel())
-
     document.removeEventListener('click', this.unmuteAllAudioElements)
     document.removeEventListener('touchstart', this.unmuteAllAudioElements)
   }
