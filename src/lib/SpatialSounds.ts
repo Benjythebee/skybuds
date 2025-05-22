@@ -11,6 +11,7 @@ export type SpatialSoundParams = {
   coneInnerAngle?: number
   coneOuterAngle?: number
   coneOuterGain?: number
+  debugColor?: THREE.ColorRepresentation
 }
 
 export class SpatialSound {
@@ -23,6 +24,8 @@ export class SpatialSound {
 
   private initOptions: SpatialSoundParams
 
+  debugSphere: THREE.Mesh = null!
+
   /**
    * Creates a new spatial sound that can be positioned in 3D space
    * @param listener The THREE.AudioListener associated with the camera
@@ -32,7 +35,8 @@ export class SpatialSound {
     url: string,
     options: SpatialSoundParams = {
       loop: false,
-      autoplay: false
+      autoplay: false,
+      debugColor: Math.random() * 0xffffff,
     }
   ) {
     if (!SpatialSound.listener) {
@@ -47,6 +51,16 @@ export class SpatialSound {
     this.sound = new THREE.PositionalAudio(this.listener)
 
     this.loadSound()
+
+    const debugSphere = new THREE.SphereGeometry(0.1, 16, 16)
+    const debugMaterial = new THREE.MeshStandardMaterial({
+      color: options.debugColor,
+      emissive: options.debugColor,
+    })
+    const debugMesh = new THREE.Mesh(debugSphere, debugMaterial)
+    this.debugSphere = debugMesh
+    this.debugSphere.visible = false
+    this.debugSphere.position.set(0, 0, 0)
   }
 
   get listener() {
@@ -119,6 +133,8 @@ export class SpatialSound {
    */
   public addToObject(parent: THREE.Object3D): void {
     parent.add(this.sound)
+    parent.add(this.debugSphere)
+    this.debugSphere.position.set(this.sound.position.x, this.sound.position.y, this.sound.position.z)
   }
 
   isTransitioning: boolean = false  
@@ -158,6 +174,7 @@ export class SpatialSound {
    */
   public setPosition(x: number, y: number, z: number): void {
     this.sound.position.set(x, y, z)
+    this.debugSphere.position.set(this.sound.position.x, this.sound.position.y, this.sound.position.z)
   }
 
   /**

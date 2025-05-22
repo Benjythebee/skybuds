@@ -2,14 +2,10 @@ import { cn } from '../lib/ui-helpers/cn'
 import React, { useState } from 'react'
 import { useAccount } from 'wagmi'
 import { UserMenu } from './user'
-import { ArrowLeftCircle, HelpCircle, PlusCircle } from 'lucide-react'
+import { ArrowLeftCircle, BadgeCheck, Grid2X2, Grid2X2X, HeadphoneOff, Headphones, HelpCircle, PlusCircle } from 'lucide-react'
 import { AddTab } from './add'
-import { SiX } from '@icons-pack/react-simple-icons'
-interface MenuOption {
-  id: string
-  label: string
-  onClick: () => void
-}
+import SpatialSound from '../lib/SpatialSounds'
+import { World } from '../lib/World'
 
 interface ChillMenuProps {
   onAddSkyBud?: () => void
@@ -27,9 +23,17 @@ export enum Tabs {
 export const RightMenu: React.FC<ChillMenuProps> = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [page, setPage] = useState(Tabs.MENU)
+  const [muted, setMuted] = useState(false)
+  const [isDebug, setDebug] = useState(false)
 
   const toggleMenu = () => {
     setIsOpen(!isOpen)
+  }
+
+
+  const onToggleMute = () => {
+      setMuted(!muted)
+      SpatialSound.listener.setMasterVolume(muted ? 1 : 0)
   }
 
   return (
@@ -67,7 +71,7 @@ export const RightMenu: React.FC<ChillMenuProps> = () => {
           transition-all duration-300 ease-out overflow-hidden
           ${
             isOpen
-              ? 'max-h-96 opacity-100'
+              ? 'max-h-[90%] md:max-h-96 opacity-100'
               : 'max-h-0 opacity-0 pointer-events-none'
           }
         `)}
@@ -123,8 +127,27 @@ export const RightMenu: React.FC<ChillMenuProps> = () => {
                     hover:bg-black/50 hover:bg-opacity-10 transition-colors duration-200
                     text-lg font-light flex items-center gap-2`}
               >
-                <SiX size={24} /> @Benjythebee
+                <BadgeCheck className='w-6 h-6' /> Benjythebee
               </a>
+            </li>
+            <li className='' key={'tools'}>
+                  <div className='border-white/50 border-t-1 flex items-center gap-2'>
+                    <button
+                      onClick={onToggleMute}
+                      className={'smallMenuButton'}
+                          >{muted?<HeadphoneOff className='w-6 h-6' />:<Headphones className='w-6 h-6'/>}</button>
+                    <button
+                    className={'smallMenuButton'}
+                    onClick={()=>{
+                      setDebug(!isDebug)
+                        World.instance.toggleDebug()
+                        World.instance.innerBoundingBoxHelper.visible = !isDebug
+                        World.instance.dayNightCycle.moonHelper!.visible = !isDebug
+                        World.instance.dayNightCycle.sunHelper!.visible = !isDebug
+                    }}>
+                        {isDebug?<Grid2X2X className='w-6 h-6' />:<Grid2X2  className='w-6 h-6' />}
+                    </button>
+                  </div>
             </li>
           </ul>
         )}
@@ -141,20 +164,21 @@ export const RightMenu: React.FC<ChillMenuProps> = () => {
 
 const AboutPage = () => {
   return (
-    <div className="max-h-64 overflow-y-scroll w-60 p-2 rounded-lg bg-black bg-opacity-50 backdrop-blur shadow-lg text-white">
+    <div className="w-[98%] md:w-72 h-100 md:max-h-72 overflow-y-scroll p-2 rounded-lg bg-black bg-opacity-50 backdrop-blur shadow-lg text-white">
       <h2 className="text-lg font-semibold mb-2">About</h2>
       <p className="text-sm text-gray-300 mb-4">
-        Skybuds is a small personal project where you can see and add your own
-        little character to a peaceful world.
+        Skybuds is a serene 3D world built around a floating island where digital life grows as visitors bring life to it.
         <br />
-        This project was to demonstrate the use of web3 technologies and
-        threeJS. And was built using React, TypeScript, and Tailwind CSS.
+        <br />
+        Visitors can create and accessorize and mint their own unique characters as NFTs, who then become permanent residents of the island. Watch as these little beings wander the landscape.
+      <br />
+      <br />
+        Built with React, TypeScript, Three.js, and Tailwind CSS, Skybuds is a small personal project that blends interactive 3D experiences and web3 technology.
       </p>
       <ul className="space-y-2">
-        <li className="text-sm text-gray-300">Version: 1.0.0</li>
         <li className="text-sm text-gray-300">
           Author:{' '}
-          <a className="underline" href="https://x.com/benjythebee">
+          <a className="underline" target="_blank" href="https://benjylarcher.com">
             Benjythebee
           </a>
         </li>

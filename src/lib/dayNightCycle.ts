@@ -1,4 +1,4 @@
-import {AmbientLight, BackSide, BufferGeometry, Color, DirectionalLight, DirectionalLightHelper, ImageUtils, Mesh, MeshBasicMaterial, MeshStandardMaterial, Object3D, PlaneGeometry, RepeatWrapping, Scene, SphereGeometry, TextureLoader, Vector3} from 'three';
+import { BackSide, BufferGeometry, Color, DirectionalLight, DirectionalLightHelper, HemisphereLight, ImageUtils, Mesh, MeshBasicMaterial, MeshStandardMaterial, Object3D, PlaneGeometry, RepeatWrapping, Scene, SphereGeometry, TextureLoader, Vector3} from 'three';
 import { FireFlies } from './utils/fireflies';
 /**
  * DayNightCycle class manages the lighting, sky color and time of day
@@ -8,7 +8,7 @@ class DayNightCycle {
   private sun: DirectionalLight;
   private sun2: DirectionalLight;
   private moon: DirectionalLight;
-  private ambientLight: AmbientLight;
+  private ambientLight: HemisphereLight;
   private skyDome: Mesh<BufferGeometry, MeshBasicMaterial>;
   private nightSky: Mesh<BufferGeometry, MeshStandardMaterial>;
   private timeOfDay: number = 0.55; // Default to morning (values 0-1)
@@ -50,12 +50,26 @@ class DayNightCycle {
     this.sun.shadow.mapSize.width = 2048;
     this.sun.shadow.mapSize.height = 2048;
     this.sun.shadow.camera.near = 0.5;
-    this.sun.shadow.camera.far = 50;
+    this.sun.shadow.camera.far = 100;
+    // this.sun.shadow.radius = 1.0
+    // this.sun.shadow.bias = -0.5
+    const d = 10;
+
+    this.sun.shadow.camera.left = - d;
+    this.sun.shadow.camera.right = d;
+    this.sun.shadow.camera.top = d;
+    this.sun.shadow.camera.bottom = - d;
+
     this.sun2.castShadow = true;
     this.sun2.shadow.mapSize.width = 1024;
     this.sun2.shadow.mapSize.height = 1024;
     this.sun2.shadow.camera.near = 0.5;
-    this.sun2.shadow.camera.far = 50;
+    this.sun2.shadow.camera.far = 100;
+
+    this.sun2.shadow.camera.left = - d;
+    this.sun2.shadow.camera.right = d;
+    this.sun2.shadow.camera.top = d;
+    this.sun2.shadow.camera.bottom = - d;
 
     const sunTarget = new Object3D();
     this.scene.add(sunTarget);
@@ -73,7 +87,9 @@ class DayNightCycle {
     this.scene.add(this.moon,this.moonHelper);
     
     // Create ambient light for global illumination
-    this.ambientLight = new AmbientLight(0x404040, 0.7);
+    const hemisphereLight = new HemisphereLight(0xffffd9, 0x080820, 0.7);
+    // scene.add(hemisphereLight);
+    this.ambientLight =hemisphereLight as any// new AmbientLight(0x404040, 0.7);
     this.scene.add(this.ambientLight);
     
     // Create sky dome
@@ -215,6 +231,10 @@ class DayNightCycle {
     return this.timeOfDay > 0.25 && this.timeOfDay < 0.75;
   }
 
+  get isDayIncludingTwilightDawn(): boolean {
+    return this.timeOfDay > 0.15 && this.timeOfDay < 0.9;
+  }
+
   /**
    * Update the cycle based on the current time
    * @param time Value between 0 and 1
@@ -285,7 +305,8 @@ class DayNightCycle {
 
     this.sunMesh!.material.color.set("rgb(255,"+ (Math.floor(Math.sin(sunAngle)*200)+55) + "," + (Math.floor(Math.sin(sunAngle)*200)+5) +")");
     // Adjust ambient light - brighter during day, dimmer at night
-    this.ambientLight.intensity = 0.2 + sunHeight * 0.1;
+    this.ambientLight.intensity = 0.2 + sunHeight * 0.6;
+    this.ambientLight.color = skyColor.clone().multiplyScalar(1.0)//this.isDayIncludingTwilightDawn?:new Color(0xffffd9);
 
     this.fireflies.fireflyMaterial.setOpacity(sunHeight>0.05?0:moonIntensity+0.1)
 

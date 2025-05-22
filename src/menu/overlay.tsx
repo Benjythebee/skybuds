@@ -4,12 +4,11 @@ import { CircleCheck, Shirt, Trash2, X } from 'lucide-react'
 import React, { useCallback } from 'react'
 import { useSceneContext } from '../store/SceneContext'
 import { Color, Vector3 } from 'three'
-import { useWearableOverlayStore, WearablesGrid } from './WearableOverlay'
+import { WearablesGrid } from './WearableOverlay'
 import {  useAccount, usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
 import SkybudsABI from '../web3/SkyBudsABI.json'
-import {  useSkyBudMetadata } from '../hooks/useSkyBudMetadata'
-import { getAttribute } from '../web3/utils'
 import { useViewContext } from '../store/ViewContext'
+import { useWearableOverlayStore } from '../store/wearableOverlayStore'
 
 
 export const Overlay: React.FC<any> = () => {
@@ -300,14 +299,14 @@ export const Overlay: React.FC<any> = () => {
                   </div>
 
                   <div
-                    className="absolute -top-1/2 -left-1/2 w-16 h-16 lg:h-32 lg:w-32 rounded-lg items-center justify-center flex-col"
+                    className="absolute -top-40 -right-10 md:-top-1/2 md:-left-1/2 w-32 h-32 lg:h-32 lg:w-32 rounded-lg items-center justify-center flex-col"
                     style={{ display: !selectingColor ? 'none' : 'flex' }}
                   >
                     Pick a color:
                     <input
                       type="color"
                       value={'#' + color.getHexString()}
-                      className="w-[80%] h-[80%] rounded-lg cursor-pointer "
+                      className="w-[80%] h-[80%] min-h-[80%] rounded-lg cursor-pointer "
                       onChange={(e) => {
                         if (!walker) return
                         const color = e.target.value.replace('#', '0x')
@@ -395,10 +394,10 @@ export const Overlay: React.FC<any> = () => {
           )}
           {!isMinting && !walker?.isMinted && (<div
             data-active={!!walker}
-            className=" pointer-events-none data-[active=true]:pointer-events-auto flex flex-col gap-2 data-[active=true]:visible invisible"
+            className=" pointer-events-none data-[active=true]:pointer-events-auto flex flex-col gap-4 md:gap-2 data-[active=true]:visible invisible"
           >
             <button
-              className="cursor-pointer flex gap-1 items-center text-black font-bold bg-blue-500 hover:bg-blue-800 rounded-lg px-4 py-2"
+              className="cursor-pointer flex gap-1 items-center text-black font-bold bg-blue-500 hover:bg-blue-800 rounded-l text-md md:text-lg px-4 py-3 md:py-2 "
               onClick={() => {
                 setOpen(!isOpen)
               }}
@@ -406,7 +405,7 @@ export const Overlay: React.FC<any> = () => {
               <Shirt className="w-4 h-4" /> Wearables
             </button>
             {isOnline && <button
-              className="cursor-pointer flex gap-1 items-center text-black font-bold bg-purple-500 hover:bg-purple-800 rounded-lg px-4 py-2"
+              className="cursor-pointer flex gap-1 items-center text-black font-bold bg-purple-500 hover:bg-purple-800 rounded-lg text-md md:text-lg px-4 py-3 md:py-2"
               onClick={() => {
                 screenshotAndMint()
               }}

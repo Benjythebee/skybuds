@@ -11,7 +11,7 @@ export const UserMenu = ({setPage,closeMenu}:{setPage:(val:Tabs)=>void,closeMenu
     const {address} = useAccount()
     const {isGuest} = useViewContext(state => state)
     return (
-    <div className="max-h-64 overflow-x-hidden overflow-y-scroll w-120 p-2 rounded-lg bg-black bg-opacity-50 backdrop-blur shadow-lg text-white">
+    <div className="w-[98%] md:w-72 max-h-100 md:max-h-72 overflow-y-scroll p-2 rounded-lg bg-black bg-opacity-50 backdrop-blur shadow-lg text-white">
         {isGuest || address?(
             <Inventory setPage={setPage} closeMenu={closeMenu} />
         ):(<ConnectWallet />)}

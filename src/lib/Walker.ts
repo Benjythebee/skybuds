@@ -28,6 +28,7 @@ import { Wearable } from './wearables/Wearable'
 import { isViewMode } from './utils/featureFlags'
 import { applyTransforms, gaussianRandom } from './utils/utils'
 import { SpeechBubble } from './SpeechBubble'
+import { HandheldLantern } from './wearables/HandheldLantern'
 
 const conversationalHellos = [
   'Hello!',
@@ -127,6 +128,7 @@ export enum CharacterState {
   IDLE = 'Idle',
   WAVING = 'Waving',
   WALKING = 'Walking',
+  WALKINGWITH = "Walkingwith",
   SITTING = 'Sitting',
   TALKING = 'Talking'
 }
@@ -140,6 +142,9 @@ const states: Record<CharacterState, { duration?: number; loop: boolean }> = {
     loop: false
   },
   [CharacterState.WALKING]: {
+    loop: true
+  },
+  [CharacterState.WALKINGWITH]: {
     loop: true
   },
   [CharacterState.SITTING]: {
@@ -211,7 +216,7 @@ export class Walker {
   collisionMesh: Mesh
 
   hatWearables: Record<string, Wearable> | null = null
-
+  handheldLantern: HandheldLantern
   static collisionMaterial = new MeshStandardMaterial({
     color: 0xff0000,
     visible: false,
@@ -285,10 +290,7 @@ export class Walker {
       speed: this.speed
     })
 
-    // const randomHat = Math.floor(Math.random() * hatNames.length)
-    // this.hatWearables = {
-    //   [hatNames[randomHat]]:new WearableHat(this.scene,this,hatNames[randomHat])
-    // }
+    this.handheldLantern = new HandheldLantern(this.scene, this)
 
     this.rngInterval = setInterval(() => {
       const stdVariation = 0.15 + this.walkerInfo.laziness * 0.2
@@ -467,6 +469,7 @@ export class Walker {
     this.walkers.forEach((walker) => {
       if (!walker.isInFrustum(frustrum)) return
       walker.update(deltaTime)
+      walker.handheldLantern.update()
     })
     Walker.animationManager.characterDataMap.forEach(
       (characterData, walker) => {
@@ -653,6 +656,12 @@ export class Walker {
       }
     }
 
+    if(this.currentState == CharacterState.WALKING && !this.world.dayNightCycle.isDay){
+      this.addStateToQueue(CharacterState.WALKINGWITH, {loop:true})
+    }else if(this.currentState == CharacterState.WALKINGWITH && this.world.dayNightCycle.isDay){
+      this.addStateToQueue(CharacterState.WALKING, {loop:true})
+    }
+
     this.updateState()
   }
 
@@ -738,6 +747,11 @@ export class Walker {
     if (force) {
       this.stateQueue.unshift({ state, duration, loop })
     } else {
+      if(this.stateQueue.findIndex((item)=>item.state == state) > -1){
+        console.log('State already in queue, skipping')
+        // If the state already exists in the queue, do nothing
+        return
+      }
       this.stateQueue.push({ state, duration, loop })
     }
   }

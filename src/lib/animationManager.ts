@@ -3,12 +3,12 @@ import { CharacterState, Walker } from "./Walker";
 import { GLTF } from "three/examples/jsm/Addons.js";
 
 const excludedBones = new Set(['Armature',
-  'mixamorigLeftHand', 'mixamorigLeftHandThumb1', 'mixamorigLeftHandThumb2', 'mixamorigLeftHandThumb3',
+   'mixamorigLeftHandThumb1', 'mixamorigLeftHandThumb2', 'mixamorigLeftHandThumb3',
   'mixamorigLeftHandIndex1', 'mixamorigLeftHandIndex2', 'mixamorigLeftHandIndex3',
   'mixamorigLeftHandMiddle1', 'mixamorigLeftHandMiddle2', 'mixamorigLeftHandMiddle3',
   'mixamorigLeftHandRing1', 'mixamorigLeftHandRing2', 'mixamorigLeftHandRing3',
   'mixamorigLeftHandPinky1', 'mixamorigLeftHandPinky2', 'mixamorigLeftHandPinky3',
-  'mixamorigRightHand', 'mixamorigRightHandThumb1', 'mixamorigRightHandThumb2', 'mixamorigRightHandThumb3',
+   'mixamorigRightHandThumb1', 'mixamorigRightHandThumb2', 'mixamorigRightHandThumb3',
   'mixamorigRightHandIndex1', 'mixamorigRightHandIndex2', 'mixamorigRightHandIndex3',
   'mixamorigRightHandMiddle1', 'mixamorigRightHandMiddle2', 'mixamorigRightHandMiddle3',
   'mixamorigRightHandRing1', 'mixamorigRightHandRing2', 'mixamorigRightHandRing3',
@@ -40,7 +40,7 @@ export class AnimationManager {
         gltf.animations.forEach(clip => {
             // Look for animation names that match our states
             for (const state of Object.values(CharacterState)) {
-              if (clip.name.toLowerCase().includes(state.toLowerCase())) {
+              if (clip.name.toLowerCase() == state.toLowerCase()) {
                 clip.tracks.map((track, index) => {
                   if(Array.from(excludedBones).includes(track.name.split('.')[0])){
                     clip.tracks.splice(index, 1)

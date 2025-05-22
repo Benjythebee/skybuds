@@ -30,7 +30,7 @@ const ExpandableSliderButton: React.FC<ExpandableSliderButtonProps> = ({
       
       <div 
         className={`overflow-hidden transition-all py-2 h-6 bg-black/40 rounded-md duration-300 ease-in-out flex items-center ml-2 ${
-          isExpanded ? 'w-48 opacity-100' : 'w-0 opacity-0'
+          isExpanded ? 'w-36 md:w-48 opacity-100' : 'w-0 opacity-0'
         }`}
       >
         <div className="w-full">

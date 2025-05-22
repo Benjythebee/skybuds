@@ -41,7 +41,6 @@ export const worldParameters = {
   islandHidden: false
 }
 const onWorldToggleDebug = (value: boolean) => {
-  World.instance.isDebug = value
   World.instance.toggleDebug()
   World.instance.innerBoundingBoxHelper.visible = value
   World.instance.dayNightCycle.moonHelper!.visible = value
@@ -133,6 +132,7 @@ export class World {
   }
 
   toggleDebug() {
+    this.isDebug = !this.isDebug
     if (this.innerBoundingBoxHelper) {
       this.innerBoundingBoxHelper.visible = this.isDebug
     }
@@ -141,6 +141,12 @@ export class World {
     }
     if (this.lightHouseBeam) {
       this.lightHouseBeam.spotlightHelper.visible = this.isDebug
+    }
+
+    if(this.spatialSounds){
+      Object.values(this.spatialSounds).forEach((sound) => {
+        sound.debugSphere.visible = this.isDebug
+      })
     }
   }
 
@@ -227,7 +233,8 @@ export class World {
       volume: 1,
       refDistance: 0.05,
       rolloffFactor: 0.9,
-      maxDistance: 1
+      maxDistance: 1,
+      debugColor: new Color(0xffaa00)
     })
     const position = new Vector3(0, 5, 0)
     fireFliesSounds.addToObject(this.island)
@@ -240,22 +247,14 @@ export class World {
       volume: 1,
       refDistance: 0.05,
       rolloffFactor: 0.9,
-      maxDistance: 1.2
+      maxDistance: 1.2,
+      debugColor: new Color(0xff0000)
     })
     const campfirePosition = new Vector3(-1.7, 5, 2.55)
     campFireSounds.addToObject(this.island)
     campFireSounds.setPosition(campfirePosition.x, campfirePosition.y, campfirePosition.z)
     this.spatialSounds.campFireSounds = campFireSounds
-    
-    
-    const debugSphere = new SphereGeometry(0.1, 16, 16)
-    const debugMaterial = new MeshStandardMaterial({
-      color: 0xff0000,
-      emissive: 0xff0000,
-    })
-    const debugMesh = new Mesh(debugSphere, debugMaterial)
-    this.island.add(debugMesh)
-    debugMesh.position.copy(campfirePosition)
+
 
   }
 
