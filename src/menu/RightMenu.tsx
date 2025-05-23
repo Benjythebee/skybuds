@@ -41,6 +41,13 @@ export const RightMenu: React.FC<ChillMenuProps> = () => {
     setIsOpen(!isOpen)
   }
 
+  React.useEffect(() => {
+    if(!isOpen) {
+      setTimeout(() => {setPage(Tabs.MENU)},200)
+      
+    }
+  },[isOpen])
+
   const onToggleDebug = () => {
     setDebug(!isDebug)
     World.instance.toggleDebug()
@@ -60,6 +67,7 @@ export const RightMenu: React.FC<ChillMenuProps> = () => {
   }
 
   return (
+    <>
     <div className="absolute top-6 right-6 z-10">
       {/* Menu Icon Button */}
       <div className="w-full flex items-end flex-row-reverse">
@@ -86,21 +94,23 @@ export const RightMenu: React.FC<ChillMenuProps> = () => {
           </svg>
         </button>
       </div>
-
+    </div>
+   
       {/* Menu Panel */}
       <div
-        className={cn(`
+        className={cn(` absolute top-16 right-2 md:right-6 z-10
           mt-1 p-2 rounded-xl bg-black/50 backdrop-blur shadow-lg 
           transition-all duration-300 ease-out overflow-hidden
           ${
             isOpen
-              ? 'max-h-[90%] md:max-h-96 opacity-100'
+              ? ' w-[90%] md:w-72 opacity-100'
               : 'max-h-0 opacity-0 pointer-events-none'
-          }
+          },
+          ${page == Tabs.WALLET ? 'md:w-120' : ''}
         `)}
       >
           {page != Tabs.MENU && (
-            <ul className="w-40">
+            <ul className="">
               <li
                 onClick={() =>
                   page == Tabs.ADD ? setPage(Tabs.WALLET) : setPage(Tabs.MENU)
@@ -117,7 +127,7 @@ export const RightMenu: React.FC<ChillMenuProps> = () => {
           )}
 
           {page == Tabs.MENU && (
-            <ul className="w-40">
+            <ul className="">
               <li key={'about'}>
                 <button
                   onClick={() => {
@@ -203,7 +213,7 @@ export const RightMenu: React.FC<ChillMenuProps> = () => {
           )}
           {page == Tabs.ADD && <AddTab setPage={setPage} />}
         </div>
-      </div>
+    </>
   )
 }
 

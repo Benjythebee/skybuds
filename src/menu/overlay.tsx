@@ -5,7 +5,7 @@ import React, { useCallback } from 'react'
 import { useSceneContext } from '../store/SceneContext'
 import { Color, Vector3 } from 'three'
 import { WearablesGrid } from './WearableOverlay'
-import {  useAccount, usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
+import {  useAccount, useChainId, usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
 import SkybudsABI from '../web3/SkyBudsABI.json'
 import { useViewContext } from '../store/ViewContext'
 import { useWearableOverlayStore } from '../store/wearableOverlayStore'
@@ -31,7 +31,7 @@ export const Overlay: React.FC<any> = () => {
   const [selectingColor, setSelectingColor] = React.useState<boolean>(false)
   const [color, setColor] = React.useState<Color>(new Color(0xffffff))
 
-  const {  data: hash, error, isPending,writeContract } = useWriteContract()
+  const {  data: hash,writeContract } = useWriteContract()
 
   const isOnline = !!isGuest || !!address
 
@@ -192,13 +192,6 @@ export const Overlay: React.FC<any> = () => {
     Walker.unFocusWalker()
     setOpen(false)
     setWalker(null)
-  }
-
-  const removeWalker = () => {
-    if (!walker) return
-    deselect()
-
-    Walker.removeWalker(walker.id)
   }
 
   const screenshotAndMint = async () => {
@@ -388,19 +381,19 @@ export const Overlay: React.FC<any> = () => {
               </div>
             </div>
           )}
-          {!isMinting && !walker?.isMinted && (<div
+          {!isMinting && (<div
             data-active={!!walker}
             className=" pointer-events-none data-[active=true]:pointer-events-auto flex flex-col gap-4 md:gap-2 data-[active=true]:visible invisible"
           >
-            <button
-              className="cursor-pointer flex gap-1 items-center text-black font-bold bg-blue-500 hover:bg-blue-800 rounded-l text-md md:text-lg px-4 py-3 md:py-2 "
+            {!walker?.isMinted && <button
+              className="cursor-pointer flex gap-1 items-center text-black font-bold bg-blue-500 hover:bg-blue-800 rounded-lg text-md md:text-lg px-4 py-3 md:py-2 "
               onClick={() => {
                 setOpen(!isOpen)
               }}
             >
               <Shirt className="w-4 h-4" /> Wearables
-            </button>
-            {isOnline && <button
+            </button>}
+            {!walker?.isMinted && isOnline && <button
               className="cursor-pointer flex gap-1 items-center text-black font-bold bg-purple-500 hover:bg-purple-800 rounded-lg text-md md:text-lg px-4 py-3 md:py-2"
               onClick={() => {
                 screenshotAndMint()
@@ -408,6 +401,7 @@ export const Overlay: React.FC<any> = () => {
             >
               <CircleCheck className="w-4 h-4" /> Mint
             </button>}
+            <OpenseaButton walker={walker} />
             {/* <button
               className="cursor-pointer flex gap-1 items-center text-black font-bold bg-gray-500 hover:bg-gray-800 rounded-lg px-2 py-2"
               onClick={() => {
@@ -436,4 +430,26 @@ const Owner = ({tokenId,walker}:{tokenId:number,walker:Walker}) => {
         {ownerAddress?.toString().slice(0,8)+'...'}
         </a>) : 'unknown'}
     </div>)
+}
+
+const OpenseaButton = ({walker}:{walker?:Walker | null}) => {
+    const contract = import.meta.env.VITE_DEPLOYED_SKYBUDS
+    const chainId = useChainId()
+    const baseUrl = chainId==84532?'testnets.opensea.io':'opensea.io'
+
+    if(!walker) return null
+    if(!walker?.isMinted) return null
+  const url = `https://${baseUrl}/assets/base_sepolia/${contract}/${walker.walkerInfo.tokenId}`
+
+  return (<a
+              className="cursor-pointer flex gap-1 items-center text-black font-bold bg-[#2081E2] hover:bg-[#1868B7] rounded-lg text-md md:text-lg px-3 py-3 md:py-2"
+              href={url}
+              target='_blank'
+              rel="noreferrer"
+              onClick={() => {
+                Walker.focusWalker(walker!)
+              }}
+            ><img src="/images/opensea_white.png" className="w-5 h-5" />
+              
+            </a>)
 }

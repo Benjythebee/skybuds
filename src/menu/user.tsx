@@ -41,6 +41,15 @@ export const Inventory = ({setPage,closeMenu}:{setPage:(val:Tabs)=>void,closeMen
         Walker.focusWalker(w)
     }
 
+    const onSelectedOwnedWalker = (tokenId:number) => {
+        const walker = Walker.walkers.find(w => w.walkerInfo.tokenId == tokenId)
+        if(walker){
+            setPage(Tabs.MENU)
+            closeMenu && closeMenu()
+            Walker.focusWalker(walker)
+        }
+    }
+
     const listOfWalkers:{
         name: string
         description: string
@@ -65,23 +74,43 @@ export const Inventory = ({setPage,closeMenu}:{setPage:(val:Tabs)=>void,closeMen
                     className="underline text-blue-400 cursor-pointer"> Click here to connect your wallet</a>
                 </p>
             }
-            <div className="overflow-y-scroll h-[70%]">
-                <div className="grid grid-cols-2 gap-4">
-                    {isLoading && <p className="text-sm text-white mb-4">Loading...</p>}
+            {!isGuest &&<div className="overflow-y-scroll min-h-32">
+                <div className={cn("relative grid grid-cols-3 gap-4 p-2 content-start h-44")}>
+                    {isLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center z-10">
+                            <svg className="animate-spin h-8 w-8 text-white" viewBox="0 0 24 24">
+                                <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                    fill="none"
+                                />
+                                <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                                />
+                            </svg>
+                        </div>
+                    )}
                     {listOfWalkers.map((walker, index) => (
-                        <div key={walker.tokenId} className="bg-gray-800 p-4 rounded-lg shadow-md">
+                        <div key={walker.tokenId} className="aspect-auto bg-gray-800 rounded-lg shadow-md cursor-pointer" onClick={()=>{
+                            onSelectedOwnedWalker(parseInt(walker.tokenId))
+                        }}>
                             <div className="relative">
-                            <img
-                                src={walker.image}
-                                alt={walker.name}
-                                className="w-full h-32 object-cover rounded-lg mb-2" />
-                            <h3 className="absolute bottom-5 right-1/2 text-lg font-semibold">{walker.name}</h3>
+                                <img
+                                    src={walker.image}
+                                    alt={walker.name}
+                                    className="w-full h-32 object-cover rounded-lg" />
+                                <h3 className="absolute w-full text-center py-1 rounded-lg bg-gray-500/10 backdrop-blur-md bottom-0 right-1/2 translate-x-1/2 text-sm font-semibold">{walker.name}</h3>
                             </div> 
-                            <p className="text-sm text-gray-400">{walker.description}</p>
                         </div>
                     ))}
                 </div>
-            </div>
+            </div>}
 
             <h2 className=" flex justify-between pt-2 border-t-2 border-white">
                 <span className="text-lg font-semibold ">Add a new SkyBud</span>

@@ -12,11 +12,11 @@ const hasEthereum = 'ethereum' in window
 
 export const useOwnedSkybuds = (chain:'testnet'|'base',wallet:string) => {
 
-    const {data,isLoading} = _useOwnedSkybud(chain,wallet)
-    console.log('useOwnedSkybuds',data)
+    const {data,isLoading,isPending,isFetching} = _useOwnedSkybud(chain,wallet)
+
     return {
         data,
-        isLoading:isLoading,
+        isLoading:isPending||isFetching||isLoading,
     }
 }
 
@@ -32,6 +32,10 @@ export const useOwnedSkybuds = (chain:'testnet'|'base',wallet:string) => {
               refetchOnReconnect: false,
               queryFn: () => wallet?fetchData(chain,wallet):[],
               select: (data) => {
+                    if(!Array.isArray(data)){
+                        return []
+                    }
+
                   return data as SkyBudMetadata[] || []
               },
           });

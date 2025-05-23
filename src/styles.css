@@ -10,5 +10,5 @@ body{
 
 
 .smallMenuButton{
-    @apply w-full cursor-pointer text-left px-1 py-2 rounded-lg text-white  hover:bg-black/50 transition-colors duration-200 text-lg font-light flex items-center gap-2;
+    @apply w-full cursor-pointer justify-center px-1 py-2 rounded-lg text-white  hover:bg-black/50 transition-colors duration-200 text-lg font-light flex items-center text-center gap-2;
 }
