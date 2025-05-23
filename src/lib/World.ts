@@ -305,7 +305,7 @@ export class World {
           child.matrixWorldNeedsUpdate = false,
           child.matrixAutoUpdate = false
         })
-    },500)
+    },1000)
 
   }
 

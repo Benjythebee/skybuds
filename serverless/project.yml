@@ -11,3 +11,7 @@ packages:
         runtime: 'go:default'
         environment:
           ALCHEMY_KEY: "${ALCHEMY_KEY}"
+      - name: get_owned_nfts
+        runtime: 'go:default'
+        environment:
+          ALCHEMY_KEY: "${ALCHEMY_KEY}"

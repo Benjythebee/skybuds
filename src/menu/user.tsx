@@ -1,17 +1,21 @@
 import { ConnectWalletButton } from "../components/connectButton"
 import { PlusCircle } from "lucide-react"
-import { useAccount } from "wagmi"
+import { useAccount, useChainId } from "wagmi"
 import { Tabs } from "./RightMenu"
 import { Walker } from "../lib/Walker"
 import { useSceneContext } from "../store/SceneContext"
 import { useViewContext } from "../store/ViewContext"
+import { useOwnedSkybuds } from "../hooks/useOwnedSkybuds"
+import { cn } from "../lib/ui-helpers/cn"
+
 
 export const UserMenu = ({setPage,closeMenu}:{setPage:(val:Tabs)=>void,closeMenu?:()=>void}) => {
 
     const {address} = useAccount()
     const {isGuest} = useViewContext(state => state)
     return (
-    <div className="w-[98%] md:w-72 max-h-100 md:max-h-72 overflow-y-scroll p-2 rounded-lg bg-black bg-opacity-50 backdrop-blur shadow-lg text-white">
+    <div className={cn(" p-2 rounded-lg bg-black bg-opacity-50 backdrop-blur shadow-lg text-white"
+    )}>
         {isGuest || address?(
             <Inventory setPage={setPage} closeMenu={closeMenu} />
         ):(<ConnectWallet />)}
@@ -25,6 +29,9 @@ export const Inventory = ({setPage,closeMenu}:{setPage:(val:Tabs)=>void,closeMen
     const {world} = useSceneContext()
     const {address} = useAccount()
     const {isGuest, setIsGuest} = useViewContext(state => state)
+    const chainId = useChainId()
+    const {data,isLoading} = useOwnedSkybuds(chainId!=84532?'base': 'testnet',address as string)
+
     const onCreateSkybud = () => {
         const w = Walker.create(world,undefined,{
             creator:address||'Guest',
@@ -39,9 +46,9 @@ export const Inventory = ({setPage,closeMenu}:{setPage:(val:Tabs)=>void,closeMen
         description: string
         image: string
         tokenId: string
-    }[] = []
+    }[] = data
     return (
-        <div>
+        <div className="w-full h-full flex flex-col">
             <h2 className="text-lg font-semibold mb-2 flex gap-2">Your SkyBuds <p>{isGuest?'[GUEST MODE]':''}</p></h2>
             <p className="text-sm text-white mb-4">
                 You have {listOfWalkers.length} SkyBuds in your wallet.
@@ -58,14 +65,24 @@ export const Inventory = ({setPage,closeMenu}:{setPage:(val:Tabs)=>void,closeMen
                     className="underline text-blue-400 cursor-pointer"> Click here to connect your wallet</a>
                 </p>
             }
-            <div className="grid grid-cols-2 gap-4">
-                {listOfWalkers.map((walker, index) => (
-                    <div key={walker.tokenId} className="bg-gray-800 p-4 rounded-lg shadow-md">
-                        <h3 className="text-lg font-semibold">{walker.name}</h3>
-                        <p className="text-sm text-gray-400">{walker.description}</p>
-                    </div>
-                ))}
+            <div className="overflow-y-scroll h-[70%]">
+                <div className="grid grid-cols-2 gap-4">
+                    {isLoading && <p className="text-sm text-white mb-4">Loading...</p>}
+                    {listOfWalkers.map((walker, index) => (
+                        <div key={walker.tokenId} className="bg-gray-800 p-4 rounded-lg shadow-md">
+                            <div className="relative">
+                            <img
+                                src={walker.image}
+                                alt={walker.name}
+                                className="w-full h-32 object-cover rounded-lg mb-2" />
+                            <h3 className="absolute bottom-5 right-1/2 text-lg font-semibold">{walker.name}</h3>
+                            </div> 
+                            <p className="text-sm text-gray-400">{walker.description}</p>
+                        </div>
+                    ))}
+                </div>
             </div>
+
             <h2 className=" flex justify-between pt-2 border-t-2 border-white">
                 <span className="text-lg font-semibold ">Add a new SkyBud</span>
                 <button onClick={()=>onCreateSkybud()} className="bg-purple-500 text-black hover:text-white hover:bg-purple-900 rounded-lg p-2 cursor-pointer "><PlusCircle className="font-bold w-6 h-6"/></button>
