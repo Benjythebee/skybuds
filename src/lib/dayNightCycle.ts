@@ -227,6 +227,14 @@ class DayNightCycle {
     return new Vector3((mirror?-1:1)*Math.cos(sunAngle), mirror?-sunHeight:sunHeight, 0).multiplyScalar(30);
   }
 
+  setDay=()=>{
+    this.timeOfDay = 0.25
+  }
+
+  setNight=()=>{
+    this.timeOfDay = 0.75
+  }
+
   get isDay(): boolean {
     return this.timeOfDay > 0.25 && this.timeOfDay < 0.75;
   }

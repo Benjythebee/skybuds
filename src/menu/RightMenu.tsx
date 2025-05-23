@@ -2,7 +2,7 @@ import { cn } from '../lib/ui-helpers/cn'
 import React, { useState } from 'react'
 import { useAccount } from 'wagmi'
 import { UserMenu } from './user'
-import { ArrowLeftCircle, BadgeCheck, Grid2X2, Grid2X2X, HeadphoneOff, Headphones, HelpCircle, PlusCircle } from 'lucide-react'
+import { ArrowLeftCircle, BadgeCheck, Grid2X2, Grid2X2X, HeadphoneOff, Headphones, HelpCircle, PlusCircle, Sunrise, Sunset } from 'lucide-react'
 import { AddTab } from './add'
 import SpatialSound from '../lib/SpatialSounds'
 import { World } from '../lib/World'
@@ -154,6 +154,22 @@ export const RightMenu: React.FC<ChillMenuProps> = () => {
                     }}>
                         {isDebug?<Grid2X2X className='w-6 h-6' />:<Grid2X2  className='w-6 h-6' />}
                     </button>
+
+                      <button
+                    className={'smallMenuButton'}
+                    onClick={()=>{
+                      World.instance.dayNightCycle.setDay()
+                    }}>
+                        <Sunrise className='w-6 h-6' />
+                    </button>
+
+                      <button
+                    className={'smallMenuButton'}
+                    onClick={()=>{
+                      World.instance.dayNightCycle.setNight()
+                    }}>
+                        <Sunset className='w-6 h-6' />
+                    </button>
                   </div>
             </li>
           </ul>
@@ -192,12 +208,4 @@ const AboutPage = () => {
       </ul>
     </div>
   )
-}
-
-const web3MenuOptions = () => {
-  const { address } = useAccount()
-
-  if (address) {
-    return <li className="text-white">Your SkyBuds</li>
-  }
 }

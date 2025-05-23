@@ -300,6 +300,13 @@ export class World {
     // this.baseMesh.visible = false
     this.scene.add(this.island)
 
+    setTimeout(() => {
+          this.island.traverse((child) => {
+          child.matrixWorldNeedsUpdate = false,
+          child.matrixAutoUpdate = false
+        })
+    },500)
+
   }
 
   getRandomPositionOnIsland(): Vector3 {
