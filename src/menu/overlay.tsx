@@ -9,6 +9,7 @@ import {  useAccount, usePublicClient, useWaitForTransactionReceipt, useWriteCon
 import SkybudsABI from '../web3/SkyBudsABI.json'
 import { useViewContext } from '../store/ViewContext'
 import { useWearableOverlayStore } from '../store/wearableOverlayStore'
+import { useSkyBudOwner } from '../hooks/useOwner'
 
 
 export const Overlay: React.FC<any> = () => {
@@ -32,10 +33,7 @@ export const Overlay: React.FC<any> = () => {
 
   const {  data: hash, error, isPending,writeContract } = useWriteContract()
 
-
   const isOnline = !!isGuest || !!address
-
-  // const {data,isLoading:IsLoadingMintedMetadata} = useSkyBudMetadata(tokenId)
 
   const {
     data:txReceipt,
@@ -323,9 +321,7 @@ export const Overlay: React.FC<any> = () => {
             </div>
             <div className="flex flex-col justify-center items-start gap-1">
               <h2 className="text-lg font-bold">{name}</h2>
-              <p className=''>
-                Creator: {walker?.isMinted ? <a target={'_blank'} className='cursor-pointer underline' href={`https://opensea.io/${creator.toString()}`}>{creator.toString().slice(0,8)+'...'}</a> : 'unknown'}
-              </p>
+              <Owner tokenId={tokenId} walker={walker!} />
               <div className="grid grid-cols-2 gap-y-1 gap-x-2">
                 <span className="text-sm text-gray-400">Talkative</span>
                 <span className="text-sm">
@@ -426,4 +422,18 @@ export const Overlay: React.FC<any> = () => {
       <WearablesGrid />
     </div>
   )
+}
+
+
+
+const Owner = ({tokenId,walker}:{tokenId:number,walker:Walker}) => {
+  const {data:ownerAddress,isLoading:isLoadingOwner} = useSkyBudOwner('testnet',tokenId,!!walker?.isMinted)
+  return  (  <div className='flex gap-1'>
+      Creator: {
+      walker?.isMinted ? 
+      (isLoadingOwner?<div className='h-4 w-10 bg-gray-600/70 animate-pulse' />:
+      <a target={'_blank'} className='cursor-pointer underline' href={`https://opensea.io/${ownerAddress?.toString()}`}>
+        {ownerAddress?.toString().slice(0,8)+'...'}
+        </a>) : 'unknown'}
+    </div>)
 }

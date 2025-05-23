@@ -7,3 +7,7 @@ packages:
         runtime: 'go:default'
         environment:
           ALCHEMY_KEY: "${ALCHEMY_KEY}"
+      - name: get_owner
+        runtime: 'go:default'
+        environment:
+          ALCHEMY_KEY: "${ALCHEMY_KEY}"

@@ -13,11 +13,13 @@ export const LoadedSkyBuds = () => {
 
     const {data,isLoading} = useSkybuds('testnet');
 
-    console.log('data',data)    
     React.useEffect(() => { 
         if(world && data.length){
             data.forEach((skyBud) => {
-
+                if(Walker.walkers.find((w)=>w.walkerInfo.tokenId == parseInt(skyBud.tokenId))){
+                    // already loaded that tokenid
+                    return
+                }
                 const speed = (getAttribute<number>(skyBud,'Speed') ||20) / 100
                 const laziness = (getAttribute<number>(skyBud,'Laziness') || 20) / 100
                 const talkative = getAttribute<boolean>(skyBud,'Talkative') ?? false

@@ -5,8 +5,12 @@
     "packageVersions": {},
     "actionVersions": {
       "skybuds/get_nfts": {
-        "digest": "5dd1c22002d04bae50117d04efa041cee05589bad5854842015dae6e19bbdb77",
-        "version": "0.0.17"
+        "digest": "c48791d52b4b23223d1b9b0a17a23fe73ae3468781f71d334e452a27866b36ef",
+        "version": "0.0.18"
+      },
+      "skybuds/get_owner": {
+        "digest": "bc2e9cb88127bd1ceee2044e466f3f064b054186a4e18e741c5281e39ed9ce8f",
+        "version": "0.0.1"
       }
     }
   }

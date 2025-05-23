@@ -52,6 +52,7 @@ export class HandheldLantern {
                 applyTransforms(mesh)
 
                 const instancedMesh = new InstancedMesh(mesh.geometry, mesh.material, 1000)
+                instancedMesh.frustumCulled = false
                 instancedMesh.instanceMatrix.setUsage( DynamicDrawUsage )
                 instancedMesh.frustumCulled = false
                 HandheldLantern.root = instancedMesh as any
@@ -60,7 +61,9 @@ export class HandheldLantern {
                 // set local:
                 this.instanceIndex = 0
                 instancedMesh.count = 1
+                
                 HandheldLantern.updateInstanceMap(this.instanceIndex, this)
+                this.root.instanceMatrix.needsUpdate = true
                 this.updateRotPosition()
                 
             })

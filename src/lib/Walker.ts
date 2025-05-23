@@ -893,7 +893,7 @@ export class Walker {
     const walkerMeta: WalkerMetaInfo = {
       name: meta?.name || 'Skybud #000',
       color: meta?.color || Math.random() * 0xffffff,
-      tokenId: meta?.color || 0,
+      tokenId: meta?.tokenId ?? 0,
       talkative: meta?.talkative ?? true,
       laziness: meta?.laziness ?? 0.2,
       speed: meta?.speed ?? parseFloat((0.1 + Math.random() * 0.3).toFixed(2)),
