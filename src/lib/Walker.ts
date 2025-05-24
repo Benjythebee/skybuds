@@ -504,7 +504,7 @@ export class Walker {
     if (this.speechBubble) {
       this.speechBubble.followObject(this.object)
     }
-
+    if (this.paused) return
     if (
       this.currentState == CharacterState.TALKING ||
       this.currentState == CharacterState.SITTING ||
@@ -514,7 +514,7 @@ export class Walker {
       return
     }
 
-    if (this.paused) return
+
     const oldPosition = this.object.position.clone()
     // Calculate new position based on direction and speed
     const newPosition = this.object.position
@@ -654,12 +654,6 @@ export class Walker {
           loop: false
         })
       }
-    }
-
-    if(this.currentState == CharacterState.WALKING && !this.world.dayNightCycle.isDay){
-      this.addStateToQueue(CharacterState.WALKINGWITH, {loop:true})
-    }else if(this.currentState == CharacterState.WALKINGWITH && this.world.dayNightCycle.isDay){
-      this.addStateToQueue(CharacterState.WALKING, {loop:true})
     }
 
     this.updateState()

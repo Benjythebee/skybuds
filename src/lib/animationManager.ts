@@ -157,6 +157,7 @@ export class AnimationManager {
         nextAction.play();
         nextAction.time =frame; // Adjust time based on frame
         nextAction.timeScale = 0; // Pause the animation
+        instance.mixer.update(0)
     }
 
     continueAnimation(walker: Walker) {

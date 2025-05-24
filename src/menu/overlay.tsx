@@ -1,15 +1,19 @@
 import ExpandableSliderButton from '../components/ExpandableSlider'
 import { CharacterState, Walker } from '../lib/Walker'
-import { CircleCheck, Shirt, Trash2, X } from 'lucide-react'
+import { Camera, CircleCheck, Shirt, Trash2, X } from 'lucide-react'
 import React, { useCallback } from 'react'
 import { useSceneContext } from '../store/SceneContext'
 import { Color, Vector3 } from 'three'
 import { WearablesGrid } from './WearableOverlay'
-import {  useAccount, useChainId, usePublicClient, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
+import {  useAccount, useChainId, usePublicClient, useSwitchChain, useWaitForTransactionReceipt, useWalletClient, useWriteContract } from 'wagmi'
 import SkybudsABI from '../web3/SkyBudsABI.json'
 import { useViewContext } from '../store/ViewContext'
 import { useWearableOverlayStore } from '../store/wearableOverlayStore'
 import { useSkyBudOwner } from '../hooks/useOwner'
+import { Spinner } from '../components/spinner'
+import { getAttribute, SkyBudMetadata } from '../web3/utils'
+import { readContract } from '@wagmi/core'
+import { config } from '../lib/web3/provider'
 
 
 export const Overlay: React.FC<any> = () => {
@@ -20,19 +24,21 @@ export const Overlay: React.FC<any> = () => {
   const { isOpen, setOpen } = useWearableOverlayStore()
   const [walker, setWalker] = React.useState<Walker | null>(null)
   const ref = React.useRef<HTMLDivElement>(null)
-  const [creator, setCreator] = React.useState<string>('')
   const [imageUrl, setImageUrl] = React.useState<string>('')
   const [talkative, setTalkative] = React.useState<boolean>(false)
   const [speed, setSpeed] = React.useState<number>(0)
   const [tokenId, setTokenId] = React.useState<number>(0)
   const [laziness, setLaziness] = React.useState<number>(0)
   const [name, setName] = React.useState<string>('')
-
+  const chainId = useChainId()
+  const {switchChainAsync} = useSwitchChain()
   const [selectingColor, setSelectingColor] = React.useState<boolean>(false)
   const [color, setColor] = React.useState<Color>(new Color(0xffffff))
 
   const {  data: hash,writeContract } = useWriteContract()
 
+  // const { data: newSkyBudMetadata,refetch } = useSkyBudMetadata(tokenId)
+  const client=  useWalletClient()
   const isOnline = !!isGuest || !!address
 
   const {
@@ -46,8 +52,18 @@ export const Overlay: React.FC<any> = () => {
 
   const wagmiClient = usePublicClient()
   const onMint = async (imageUrl:string) => {
+    
+    if(chainId != import.meta.env.VITE_CURRENT_CHAIN_ID){
+      try{
+        await switchChainAsync(import.meta.env.VITE_CURRENT_CHAIN_ID)
+      }catch(e){
+        console.error('Error switching chain:', e)
+        return
+      }
+    }
     //close wearable overlay
     setOpen(false)
+
     const parameters = {
       wearables: walker!.hatWearables?Object.values(walker!.hatWearables).map((wearable) => wearable.wearableData.index):[],
       laziness: Math.max(0,Math.min(100,Math.floor(laziness*100))),
@@ -79,6 +95,7 @@ export const Overlay: React.FC<any> = () => {
     writeContract({
       address:(import.meta.env.VITE_DEPLOYED_SKYBUDS||'0x') as `0x${string}`,
       abi:SkybudsABI.abi,
+      chainId:parseInt(import.meta.env.VITE_CURRENT_CHAIN_ID||'84532'),
       functionName:'mint',
       args,
     },{
@@ -94,14 +111,60 @@ export const Overlay: React.FC<any> = () => {
     })
   }
 
+
+  const fetchAndSetMetadataForTokenId = async (tokenId:number) => {
+
+    let newSkyBudMetadata:SkyBudMetadata = null!
+    try{
+      const stringified= await readContract(config,{
+          address:(import.meta.env.VITE_DEPLOYED_SKYBUDS||'0x'),
+          abi:SkybudsABI.abi,
+          functionName:'tokenURI',
+          args:[tokenId],
+      }) as string
+      newSkyBudMetadata =JSON.parse(atob(stringified.split(',')[1])) as SkyBudMetadata
+    }catch(e){
+      console.error('Error fetching tokenURI:', e)
+      return
+    }
+
+    if (newSkyBudMetadata) {
+      if(tokenId == parseInt(newSkyBudMetadata.tokenId)){
+        setName(newSkyBudMetadata.name)
+        setImageUrl(newSkyBudMetadata.image)
+
+        const talkative = getAttribute<boolean>(newSkyBudMetadata,'Talkative')
+        const speed = (getAttribute<number>(newSkyBudMetadata,'Speed')|| 0) / 100
+        const laziness = (getAttribute<number>(newSkyBudMetadata,'Laziness')|| 0) / 100
+        const color = getAttribute<string>(newSkyBudMetadata,'Color') || '0xffffff'
+
+        setTalkative(!!talkative)
+        setSpeed(speed)
+        setLaziness(laziness)
+        const newColor = new Color(color)
+        setColor(newColor)
+
+
+        if (walker) {
+          walker.walkerInfo.talkative = !!talkative
+          walker.walkerInfo.laziness = laziness
+          walker.walkerInfo.speed = speed
+          walker.walkerInfo.color = parseInt(color.replace('#', '0x'),16)
+
+          //@ts-ignore
+          walker.mesh.material.color = newColor
+        }
+      }
+    }
+  }
+
   const onMintedSuccess = async (tokenId:number,creator:string) => {
     // Set all the info on the walker
     if(!walker) return
     walker.walkerInfo.tokenId = tokenId
     walker.walkerInfo.creator = creator
-    setCreator(creator)
     setTokenId(tokenId)
-    // This will trigger the metadata to be fetched by the useSkyBudMetadata hook
+    fetchAndSetMetadataForTokenId(tokenId)
   }
 
   React.useEffect(()=>{
@@ -115,39 +178,6 @@ export const Overlay: React.FC<any> = () => {
       }
   },[isSuccess, txReceipt])
 
-  // React.useEffect(() => {
-  
-  //   if (data) {
-
-
-
-  //     if(tokenId == parseInt(data.tokenId)){
-  //       setName(data.name)
-  //       setImageUrl(data.image)
-
-  //       const talkative = getAttribute<boolean>(data,'Talkative')
-  //       const speed = getAttribute<number>(data,'Speed')|| 0 / 100
-  //       const laziness = getAttribute<number>(data,'Laziness')|| 0 / 100
-  //       const color = getAttribute<string>(data,'Color') || '0xffffff'
-  //       setTalkative(!!talkative)
-  //       setSpeed(speed)
-  //       setLaziness(laziness)
-  //       const newColor = new Color(color)
-  //       setColor(newColor)
-
-
-  //       if (walker) {
-  //         walker.walkerInfo.talkative = !!talkative
-  //         walker.walkerInfo.laziness = laziness
-  //         walker.walkerInfo.speed = speed
-  //         walker.walkerInfo.color = parseInt(color.replace('#', '0x'),16)
-  //         //@ts-ignore
-  //         walker.mesh.material.color = newColor
-  //       }
-  //     }
-
-  //   }
-  // }, [data])
 
   const onClickOutside = useCallback(
     (e: MouseEvent) => {
@@ -163,7 +193,6 @@ export const Overlay: React.FC<any> = () => {
       setWalker(walker)
       setTokenId(walker.walkerInfo.tokenId)
       setName(walker.walkerInfo.name)
-      setCreator(walker.isMinted ? walker.walkerInfo.creator : 'unknown')
       setImageUrl(walker.walkerInfo.image_url || '')
       setTalkative(walker.walkerInfo.talkative)
       setSpeed(walker.walkerInfo.speed)
@@ -194,7 +223,7 @@ export const Overlay: React.FC<any> = () => {
     setWalker(null)
   }
 
-  const screenshotAndMint = async () => {
+  const screenshotAndMint = async (shouldMint:boolean=true) => {
     if (!walker) return
 
     // Temporarily move the walker to a point on the map
@@ -205,7 +234,7 @@ export const Overlay: React.FC<any> = () => {
     Walker.animationManager.pauseAnimationAtFrame(
       walker,
       CharacterState.WAVING,
-      1.5
+      1.45
     )
     let dayTime = world.dayNightCycle.getTimeOfDay()
     world.dayNightCycle.setTimeOfDay(0.52)
@@ -228,9 +257,10 @@ export const Overlay: React.FC<any> = () => {
       world.dayNightCycle.setTimeOfDay(dayTime)
       if (!url) return
       setImageUrl('data:image/jpg;base64,' + url)
-
-      onMint(url)
-    })
+      if(shouldMint){
+        onMint(url)
+      }
+    },5)
   }
 
   return (
@@ -376,9 +406,7 @@ export const Overlay: React.FC<any> = () => {
 
           {isMinting && (
             <div className="pointer-events-none data-[active=true]:pointer-events-auto gap-2 data-[active=true]:visible bg-black/40 backdrop-blur-md flex items-center justify-center">
-              <div className="text-white text-lg font-bold">
-                <CircleCheck className="animate-spin" />
-              </div>
+              <Spinner className="absolute z-10" />
             </div>
           )}
           {!isMinting && (<div
@@ -393,13 +421,21 @@ export const Overlay: React.FC<any> = () => {
             >
               <Shirt className="w-4 h-4" /> Wearables
             </button>}
-            {!walker?.isMinted && isOnline && <button
+            {!walker?.isMinted && !!address && <button
               className="cursor-pointer flex gap-1 items-center text-black font-bold bg-purple-500 hover:bg-purple-800 rounded-lg text-md md:text-lg px-4 py-3 md:py-2"
               onClick={() => {
                 screenshotAndMint()
               }}
             >
               <CircleCheck className="w-4 h-4" /> Mint
+            </button>}
+              {!walker?.isMinted && isGuest && <button
+              className="cursor-pointer flex gap-1 items-center text-black font-bold bg-purple-500 hover:bg-purple-800 rounded-lg text-md md:text-lg px-4 py-3 md:py-2"
+              onClick={() => {
+                screenshotAndMint(false)
+              }}
+            >
+              <Camera className="w-4 h-4" /> Picture
             </button>}
             <OpenseaButton walker={walker} />
             {/* <button

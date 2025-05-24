@@ -144,6 +144,7 @@ export class Wearable{
         this.updateRotPosition()
     }
 
+    
     _boneWorldMatrix:Matrix4 = new Matrix4()
     instanceMatrix:Matrix4 = new Matrix4()
     _tmpObject: Object3D = new Object3D()

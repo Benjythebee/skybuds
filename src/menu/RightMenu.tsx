@@ -1,10 +1,9 @@
 import { cn } from '../lib/ui-helpers/cn'
 import React, { useState } from 'react'
-import { useAccount } from 'wagmi'
 import { UserMenu } from './user'
 import {
   ArrowLeftCircle,
-  BadgeCheck,
+  ArrowUpRight,
   Grid2X2,
   Grid2X2X,
   HeadphoneOff,
@@ -18,6 +17,7 @@ import { AddTab } from './add'
 import SpatialSound from '../lib/SpatialSounds'
 import { World } from '../lib/World'
 import { gui } from '../lib/config'
+import { AboutPage } from './about'
 interface ChillMenuProps {
   onAddSkyBud?: () => void
   onViewSkyBuds?: () => void
@@ -160,7 +160,7 @@ export const RightMenu: React.FC<ChillMenuProps> = () => {
                       hover:bg-black/50 hover:bg-opacity-10 transition-colors duration-200
                       text-lg font-light flex items-center gap-2`}
                 >
-                  <BadgeCheck className="w-6 h-6" /> Benjythebee
+                  <ArrowUpRight className="w-6 h-6" /> Benjythebee
                 </a>
               </li>
               <li className="" key={'tools'}>
@@ -217,36 +217,3 @@ export const RightMenu: React.FC<ChillMenuProps> = () => {
   )
 }
 
-const AboutPage = () => {
-  return (
-    <div className="w-[98%] md:w-72 h-100 md:max-h-72 overflow-y-scroll p-2 rounded-lg bg-black bg-opacity-50 backdrop-blur shadow-lg text-white">
-      <h2 className="text-lg font-semibold mb-2">About</h2>
-      <p className="text-sm text-gray-300 mb-4">
-        Skybuds is a serene 3D world built around a floating island where
-        digital life grows as visitors bring life to it.
-        <br />
-        <br />
-        Visitors can create and accessorize and mint their own unique characters
-        as NFTs, who then become permanent residents of the island. Watch as
-        these little beings wander the landscape.
-        <br />
-        <br />
-        Built with React, TypeScript, Three.js, and Tailwind CSS, Skybuds is a
-        small personal project that blends interactive 3D experiences and web3
-        technology.
-      </p>
-      <ul className="space-y-2">
-        <li className="text-sm text-gray-300">
-          Author:{' '}
-          <a
-            className="underline"
-            target="_blank"
-            href="https://benjylarcher.com"
-          >
-            Benjythebee
-          </a>
-        </li>
-      </ul>
-    </div>
-  )
-}

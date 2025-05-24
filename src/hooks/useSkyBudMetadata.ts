@@ -4,11 +4,11 @@ import { SkyBudMetadata } from "../web3/utils"
 
 export const useSkyBudMetadata = (tokenId:number) => {
 
-    const {data,isLoading,error} = useReadContract({
+    const {data,isLoading,error,refetch} = useReadContract({
       address:(import.meta.env.VITE_DEPLOYED_SKYBUDS||'0x') as `0x${string}`,
       abi:SkybudsABI.abi,
       functionName:'tokenURI',
-      query:{enabled:!!tokenId},
+      query:{enabled:false,refetchOnWindowFocus:false,refetchOnMount:false,refetchOnReconnect:false},
       args:[tokenId],
     }) 
 
@@ -16,5 +16,6 @@ export const useSkyBudMetadata = (tokenId:number) => {
     return {
         data:decoded as SkyBudMetadata | null,
         isLoading,
+        refetch:refetch
     }
 }

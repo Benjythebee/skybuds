@@ -6,7 +6,7 @@ import {
   import {QueryClient, QueryClientProvider} from '@tanstack/react-query'
 import { WagmiProvider } from "wagmi";
 
-const config = getDefaultConfig({
+export const config = getDefaultConfig({
     appName: 'SkyBuds',
     projectId: import.meta.env.VITE_PROJECT_ID||'',
     chains: [base,baseSepolia],
