@@ -1,3 +1,4 @@
+import { Code } from "lucide-react"
 
 
 
@@ -28,6 +29,16 @@ export const AboutPage = () => {
             href="https://benjylarcher.com"
           >
             Benjythebee
+          </a>
+        </li>
+        <li className="flex gap-2  text-sm text-gray-300">
+            Repo: 
+          <a
+            className="underline flex gap-2 "
+            target="_blank"
+            href="https://github.com/Benjythebee/skybuds"
+          >
+            Github
           </a>
         </li>
       </ul>
