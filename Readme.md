@@ -102,3 +102,10 @@ Deploy using Hardhat or your preferred deployment tool to Base network.
 - **Live Demo**: [skybuds.benjylarcher.com](https://skybuds.benjylarcher.com)
 - **Twitter**: [@benjythebee](https://x.com/benjythebee)
 
+
+
+# TODO:
+
+- Fix walking animation at night time
+- add unique names
+- Deploy on mainnet
