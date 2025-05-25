@@ -39,7 +39,7 @@ yarn-error.log*
 serverless/.deployed/**/*
 serverless/.deployed
 
-./contracts/.openzeppelin
-./contracts/artifacts
-./contracts/cache
-./contracts/typechain-types
+contracts/.openzeppelin
+contracts/artifacts
+contracts/cache
+contracts/typechain-types
