@@ -38,3 +38,8 @@ yarn-error.log*
 .vercel
 serverless/.deployed/**/*
 serverless/.deployed
+
+./contracts/.openzeppelin
+./contracts/artifacts
+./contracts/cache
+./contracts/typechain-types

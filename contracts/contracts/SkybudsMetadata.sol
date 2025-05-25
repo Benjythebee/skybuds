@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./MetadataEncoding.sol"; // Make sure the path is correct
+import "./NameStorage.sol"; // Import the NameStorage contract
 import "@openzeppelin/contracts/utils/Base64.sol";
 
 contract SkyBudsMetadata is MetadataEncoding,Ownable {
@@ -11,6 +12,8 @@ contract SkyBudsMetadata is MetadataEncoding,Ownable {
         string base64Uri;
         bool exists;
     }
+
+    NameStorage public contractNameStorage;
     
     // Mapping from tokenId to SkyBudData
     mapping(uint256 => SkyBudData) private _tokenMetadata;
@@ -18,7 +21,8 @@ contract SkyBudsMetadata is MetadataEncoding,Ownable {
     // Event emitted when metadata is updated
     event MetadataUpdated(uint256 indexed tokenId, uint256 encodedMetadata, string base64Uri);
 
-    constructor() Ownable(msg.sender) {
+    constructor(address _contractNameStorage) Ownable(msg.sender) {
+        contractNameStorage = NameStorage(_contractNameStorage);
     }
 
 
@@ -93,6 +97,8 @@ contract SkyBudsMetadata is MetadataEncoding,Ownable {
         // Convert tokenId to string
         string memory tokenIdString = uint2str(tokenId);
 
+        string memory name = contractNameStorage.getNameForIndex(tokenId);
+
             // Generate attributes array
         string memory attributes = string(abi.encodePacked(
             '{"trait_type":"Talkative","value":', isTalkative_ ? 'true' : 'false', '},',
@@ -102,11 +108,14 @@ contract SkyBudsMetadata is MetadataEncoding,Ownable {
             '{"trait_type":"Wearables","value":', wearableIdsJson, '}'
         ));
 
+        string memory talks = isTalkative_ ? "He enjoys conversations with his peers." : "";
+        string memory colorDescription = bytes(colorValue).length > 0 ? string(abi.encodePacked("His color is ", colorValue, ".")) : "";
+
         // Build the JSON string using abi.encodePacked
         bytes memory json = bytes(string(
             abi.encodePacked(
-                '{"name":"SkyBud #', tokenIdString, '",',
-                '"description":"my little dude",',
+                '{"name":"', name, '",',
+                '"description":"',name,' is Skybud #',tokenIdString,'.',talks,colorDescription,'",',
                 '"tokenId":"', tokenIdString, '",',
                 '"image":"data:image/jpg;base64,', data.base64Uri, '",',
                 '"external_url":"https://skybuds.benjylarcher.com/",',

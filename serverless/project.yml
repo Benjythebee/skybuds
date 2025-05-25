@@ -7,11 +7,17 @@ packages:
         runtime: 'go:default'
         environment:
           ALCHEMY_KEY: "${ALCHEMY_KEY}"
+          DEPLOYED_SKYBUDS_BASE: "${DEPLOYED_SKYBUDS_BASE}"
+          DEPLOYED_SKYBUDS_SEPOLIA: "${DEPLOYED_SKYBUDS_SEPOLIA}"
       - name: get_owner
         runtime: 'go:default'
         environment:
           ALCHEMY_KEY: "${ALCHEMY_KEY}"
+          DEPLOYED_SKYBUDS_BASE: "${DEPLOYED_SKYBUDS_BASE}"
+          DEPLOYED_SKYBUDS_SEPOLIA: "${DEPLOYED_SKYBUDS_SEPOLIA}"
       - name: get_owned_nfts
         runtime: 'go:default'
         environment:
           ALCHEMY_KEY: "${ALCHEMY_KEY}"
+          DEPLOYED_SKYBUDS_BASE: "${DEPLOYED_SKYBUDS_BASE}"
+          DEPLOYED_SKYBUDS_SEPOLIA: "${DEPLOYED_SKYBUDS_SEPOLIA}"

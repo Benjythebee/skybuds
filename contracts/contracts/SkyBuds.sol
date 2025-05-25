@@ -13,7 +13,7 @@ contract SkyBuds is ReentrancyGuard,ERC721, Ownable {
 
     SkyBudsMetadata public contractSkybudsMetadata;
 
-    uint256 public constant MAX_TOKENS = 2000;
+    uint256 public constant MAX_TOKENS = 1000;
 
 
     constructor(address _addressContractMetadata) Ownable(msg.sender) ReentrancyGuard() ERC721("SkyBuds", "SKB") {

@@ -14,7 +14,7 @@ const hasEthereum = 'ethereum' in window
 export const useSkyBudOwner = (chain:'testnet'|'base',tokenId:number,isMinted:boolean=false) => {
 
     const {data,isLoading,error} = useReadContract({
-      address:(import.meta.env.VITE_DEPLOYED_SKYBUDS||'0x') as `0x${string}`,
+      address:(import.meta.env.VITE_DEPLOYED_SKYBUDS_SEPOLIA||'0x') as `0x${string}`,
       abi:SkybudsABI.abi,
       functionName:'ownerOf',
       query:{enabled:!!tokenId && isMinted && hasEthereum},

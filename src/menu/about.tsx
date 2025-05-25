@@ -1,6 +1,3 @@
-import { Code } from "lucide-react"
-
-
 
 export const AboutPage = () => {
   return (

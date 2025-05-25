@@ -82,7 +82,7 @@ export const Overlay: React.FC<any> = () => {
       console.log('Minting with parameters:', args)
     try{
       const tx = await wagmiClient?.estimateContractGas({
-        address: (import.meta.env.VITE_DEPLOYED_SKYBUDS || '0x') as `0x${string}`,
+        address: (import.meta.env.VITE_DEPLOYED_SKYBUDS_SEPOLIA || '0x') as `0x${string}`,
         abi: SkybudsABI.abi,
         functionName: 'mint',
         args,
@@ -93,7 +93,7 @@ export const Overlay: React.FC<any> = () => {
     }
 
     writeContract({
-      address:(import.meta.env.VITE_DEPLOYED_SKYBUDS||'0x') as `0x${string}`,
+      address:(import.meta.env.VITE_DEPLOYED_SKYBUDS_SEPOLIA||'0x') as `0x${string}`,
       abi:SkybudsABI.abi,
       chainId:parseInt(import.meta.env.VITE_CURRENT_CHAIN_ID||'84532'),
       functionName:'mint',
@@ -117,7 +117,7 @@ export const Overlay: React.FC<any> = () => {
     let newSkyBudMetadata:SkyBudMetadata = null!
     try{
       const stringified= await readContract(config,{
-          address:(import.meta.env.VITE_DEPLOYED_SKYBUDS||'0x'),
+          address:(import.meta.env.VITE_DEPLOYED_SKYBUDS_SEPOLIA||'0x'),
           abi:SkybudsABI.abi,
           functionName:'tokenURI',
           args:[tokenId],
@@ -469,7 +469,7 @@ const Owner = ({tokenId,walker}:{tokenId:number,walker:Walker}) => {
 }
 
 const OpenseaButton = ({walker}:{walker?:Walker | null}) => {
-    const contract = import.meta.env.VITE_DEPLOYED_SKYBUDS
+    const contract = import.meta.env.VITE_DEPLOYED_SKYBUDS_SEPOLIA
     const chainId = useChainId()
     const baseUrl = chainId==84532?'testnets.opensea.io':'opensea.io'
 

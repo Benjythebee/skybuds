@@ -64,11 +64,13 @@ func Main(ctx context.Context, event Event) Response {
 	// Determine the URL based on the chain parameter
 	var url string
 	if chain != "testnet" {
+		contractAddress := os.Getenv("DEPLOYED_SKYBUDS_BASE")
 		// chain == "base"
-		url = fmt.Sprintf("https://base-mainnet.g.alchemy.com/nft/v3/%s/getOwnersForNFT?contractAddress=0x09d48fc5625c52C261b567724B160D562BC584CF&tokenId=%s", apiKey, tokenId)
+		url = fmt.Sprintf("https://base-mainnet.g.alchemy.com/nft/v3/%s/getOwnersForNFT?contractAddress=%s&tokenId=%s", apiKey, contractAddress, tokenId)
 	} else {
+		contractAddress := os.Getenv("DEPLOYED_SKYBUDS_SEPOLIA")
 		// chain == "testnet"
-		url = fmt.Sprintf("https://base-sepolia.g.alchemy.com/nft/v3/%s/getOwnersForNFT?contractAddress=0x09d48fc5625c52C261b567724B160D562BC584CF&tokenId=%s", apiKey, tokenId)
+		url = fmt.Sprintf("https://base-sepolia.g.alchemy.com/nft/v3/%s/getOwnersForNFT?contractAddress=%s&tokenId=%s", apiKey, contractAddress, tokenId)
 	}
 
 	// Fetch data from Alchemy
