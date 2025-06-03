@@ -3,7 +3,7 @@ import namesJSon from '../data/names.json';
 import { NameStorage } from "../typechain-types";
 
 async function setNamesForContract(contract:NameStorage){
-	const chunkSize = 500;
+	const chunkSize = 250;
 	const names = namesJSon as string[];
 	for(let i = 0; i <= names.length; i += chunkSize) {
 		const chunk = names.slice(i, i + chunkSize);
@@ -15,6 +15,9 @@ async function setNamesForContract(contract:NameStorage){
 
 
 async function main() {
+	/**
+	 *  Note that mainnet has alraedy been deployed
+	 */
 
 	const [deployer] = await ethers.getSigners();
 
@@ -25,6 +28,7 @@ async function main() {
 
 	const NameStorage = await ethers.getContractFactory("NameStorage");
 	const nameStorageContract = await NameStorage.deploy();
+	// const nameAddress = await ethers.getContractAt("NameStorage",'0x1e91b8E0ea42bfAf3A3c3633Dbe0d935D5aB1587')
 	const nameAddress = await nameStorageContract.getAddress();
 
 	await setNamesForContract(nameStorageContract)

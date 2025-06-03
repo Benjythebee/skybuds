@@ -37,9 +37,7 @@ export const Overlay: React.FC<any> = () => {
 
   const {  data: hash,writeContract } = useWriteContract()
 
-  // const { data: newSkyBudMetadata,refetch } = useSkyBudMetadata(tokenId)
-  const client=  useWalletClient()
-  const isOnline = !!isGuest || !!address
+  const contractAddress = chainId != 84532 ? import.meta.env.VITE_SKYBUDS_MAINNET : import.meta.env.VITE_DEPLOYED_SKYBUDS_SEPOLIA
 
   const {
     data:txReceipt,
@@ -82,7 +80,7 @@ export const Overlay: React.FC<any> = () => {
       console.log('Minting with parameters:', args)
     try{
       const tx = await wagmiClient?.estimateContractGas({
-        address: (import.meta.env.VITE_DEPLOYED_SKYBUDS_SEPOLIA || '0x') as `0x${string}`,
+        address: (contractAddress || '0x') as `0x${string}`,
         abi: SkybudsABI.abi,
         functionName: 'mint',
         args,
@@ -93,7 +91,7 @@ export const Overlay: React.FC<any> = () => {
     }
 
     writeContract({
-      address:(import.meta.env.VITE_DEPLOYED_SKYBUDS_SEPOLIA||'0x') as `0x${string}`,
+      address:(contractAddress||'0x') as `0x${string}`,
       abi:SkybudsABI.abi,
       chainId:parseInt(import.meta.env.VITE_CURRENT_CHAIN_ID||'84532'),
       functionName:'mint',
@@ -117,7 +115,7 @@ export const Overlay: React.FC<any> = () => {
     let newSkyBudMetadata:SkyBudMetadata = null!
     try{
       const stringified= await readContract(config,{
-          address:(import.meta.env.VITE_DEPLOYED_SKYBUDS_SEPOLIA||'0x'),
+          address:(contractAddress||'0x'),
           abi:SkybudsABI.abi,
           functionName:'tokenURI',
           args:[tokenId],
@@ -438,14 +436,6 @@ export const Overlay: React.FC<any> = () => {
               <Camera className="w-4 h-4" /> Picture
             </button>}
             <OpenseaButton walker={walker} />
-            {/* <button
-              className="cursor-pointer flex gap-1 items-center text-black font-bold bg-gray-500 hover:bg-gray-800 rounded-lg px-2 py-2"
-              onClick={() => {
-                removeWalker()
-              }}
-            >
-              <Trash2 className="w-4 h-4" /> Trash
-            </button>*/}
           </div> )}
         </div>
       </div>
@@ -457,7 +447,7 @@ export const Overlay: React.FC<any> = () => {
 
 
 const Owner = ({tokenId,walker}:{tokenId:number,walker:Walker}) => {
-  const {data:ownerAddress,isLoading:isLoadingOwner} = useSkyBudOwner('testnet',tokenId,!!walker?.isMinted)
+  const {data:ownerAddress,isLoading:isLoadingOwner} = useSkyBudOwner(tokenId,!!walker?.isMinted)
   return  (  <div className='flex gap-1'>
       Creator: {
       walker?.isMinted ? 
@@ -469,13 +459,14 @@ const Owner = ({tokenId,walker}:{tokenId:number,walker:Walker}) => {
 }
 
 const OpenseaButton = ({walker}:{walker?:Walker | null}) => {
-    const contract = import.meta.env.VITE_DEPLOYED_SKYBUDS_SEPOLIA
     const chainId = useChainId()
-    const baseUrl = chainId==84532?'testnets.opensea.io':'opensea.io'
+    const contract = chainId != 84532 ? import.meta.env.VITE_SKYBUDS_MAINNET : import.meta.env.VITE_DEPLOYED_SKYBUDS_SEPOLIA
+    const baseUrl = chainId!=84532?'opensea.io':'testnets.opensea.io'
+    const basePath = chainId!=84532?'base':'base_sepolia'
 
     if(!walker) return null
     if(!walker?.isMinted) return null
-  const url = `https://${baseUrl}/assets/base_sepolia/${contract}/${walker.walkerInfo.tokenId}`
+  const url = `https://${baseUrl}/assets/${basePath}/${contract}/${walker.walkerInfo.tokenId}`
 
   return (<a
               className="cursor-pointer flex gap-1 items-center text-black font-bold bg-[#2081E2] hover:bg-[#1868B7] rounded-lg text-md md:text-lg px-3 py-3 md:py-2"

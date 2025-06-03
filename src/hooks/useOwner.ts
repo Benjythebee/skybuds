@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query"
 import SkybudsABI from "../web3/SkyBudsABI.json"
-import { useReadContract } from "wagmi"
+import { useChainId, useReadContract } from "wagmi"
 
 
 const fetchData = async (chain: 'testnet'|'base',tokenId:number) => {
@@ -11,17 +11,20 @@ const fetchData = async (chain: 'testnet'|'base',tokenId:number) => {
 
 const hasEthereum = 'ethereum' in window
 
-export const useSkyBudOwner = (chain:'testnet'|'base',tokenId:number,isMinted:boolean=false) => {
+export const useSkyBudOwner = (tokenId:number,isMinted:boolean=false) => {
 
+    const chainId = useChainId()
+    const address = chainId != 84532 ? import.meta.env.VITE_SKYBUDS_MAINNET : import.meta.env.VITE_DEPLOYED_SKYBUDS_SEPOLIA
+    const chainname = chainId != 84532 ?'base':'testnet'
     const {data,isLoading,error} = useReadContract({
-      address:(import.meta.env.VITE_DEPLOYED_SKYBUDS_SEPOLIA||'0x') as `0x${string}`,
+      address:(address||'0x') as `0x${string}`,
       abi:SkybudsABI.abi,
       functionName:'ownerOf',
       query:{enabled:!!tokenId && isMinted && hasEthereum},
       args:[tokenId],
     });
 
-    const {data:ownerDataFromAPI,isLoading:isLoadingAPICall} = useSkybudOwner(chain,tokenId)
+    const {data:ownerDataFromAPI,isLoading:isLoadingAPICall} = _useSkybudOwner(chainname,tokenId)
 
     return {
         data:data as string | null || ownerDataFromAPI.owner,
@@ -30,7 +33,7 @@ export const useSkyBudOwner = (chain:'testnet'|'base',tokenId:number,isMinted:bo
 }
 
 
-  const useSkybudOwner = (chain: 'testnet'|'base',tokenId:number) => {
+  const _useSkybudOwner = (chain: 'testnet'|'base',tokenId:number) => {
       return useQuery(
           {
               initialData:{owner:undefined} as {owner:string|undefined},
